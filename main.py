@@ -12,19 +12,18 @@ def parse_args():
         prog='record-bookings',
         description='Fills the bookings spreadsheet with bookings from Bnova spreadsheet.',
     )
-    parser.add_argument('filename')  # required positional argument
+    parser.add_argument('filepath')  # required positional argument
     return parser.parse_args()
 
 
-def record_bookings():
-    filename = parse_args().filename
-
+def record_bookings(filename):
     # load all records from spreadsheet
     bookings = read_bookings_from_file(filename)
 
-    # calculate final amount without commission
+    # calculate final amount without commission and daily profit
     processed_data = process_bookings_data(bookings)
 
 
 if __name__ == "__main__":
-    record_bookings()
+    filepath = parse_args().filepath
+    record_bookings(filepath)
