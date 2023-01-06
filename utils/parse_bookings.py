@@ -1,7 +1,9 @@
 import math
 import pandas as pd
 
-from constants import BNOVA_SHEET_NAME, COMMISSION_MAP
+from data.apartments import SEREBRYANICHESKIY_APARTMENTS, RADIK_APARTMENTS, DINARA_APARTMENTS
+from constants import BNOVA_SHEET_NAME, COMMISSION_MAP, RADIK_SPREADSHEET_ID, DINARA_SPREADSHEET_ID, \
+    SEREBRYANICHESKIY_SPREADSHEET_ID
 from utils.date_helper import calculate_amount_of_days
 
 
@@ -21,15 +23,21 @@ def calculate_profit_amount(row):
     return row['total_amount'] * (1 - COMMISSION_MAP[row['source']])
 
 
-def calculate_daily_amount(row):
-    return math.floor(row['final_amount'] / row['days'])
+# def calculate_daily_amount(row):
+#     return math.floor(row['final_amount'] / row['days'])
 
 
 def process_bookings_data(bookings):
-    bookings['days'] = bookings.apply(lambda row: calculate_amount_of_days(row['arrival_date'], row['leaving_date']), axis=1)
     bookings['final_amount'] = bookings.apply(lambda row: calculate_profit_amount(row), axis=1)
-    bookings['daily_amount'] = bookings.apply(lambda row: calculate_daily_amount(row), axis=1)
+    # bookings['days'] = bookings.apply(lambda row: calculate_amount_of_days(row['arrival_date'], row['leaving_date']), axis=1)
+    # bookings['daily_amount'] = bookings.apply(lambda row: calculate_daily_amount(row), axis=1)
 
-    return bookings
+    data = {
+        RADIK_SPREADSHEET_ID: bookings.query("category in @RADIK_APARTMENTS"),
+        DINARA_SPREADSHEET_ID: bookings.query("category in @DINARA_APARTMENTS"),
+        SEREBRYANICHESKIY_SPREADSHEET_ID: bookings.query("category in @SEREBRYANICHESKIY_APARTMENTS"),
+    }
+
+    return data
 
 

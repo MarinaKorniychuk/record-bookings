@@ -3,8 +3,7 @@ import pygsheets
 
 from constants import CLIENT_SECRET_PATH
 from utils.parse_bookings import read_bookings_from_file, process_bookings_data
-
-gc = pygsheets.authorize(CLIENT_SECRET_PATH)
+from utils.spreadsheet_operations import record_booking_records
 
 
 def parse_args():
@@ -16,14 +15,24 @@ def parse_args():
     return parser.parse_args()
 
 
-def record_bookings(filename):
+def read_and_process_booking_records(filename):
     # load all records from spreadsheet
-    bookings = read_bookings_from_file(filename)
+    booking_records = read_bookings_from_file(filename)
 
     # calculate final amount without commission and daily profit
-    processed_data = process_bookings_data(bookings)
+    processed_records = process_bookings_data(booking_records)
+    return processed_records
+
+
+def update_google_spreadsheets(data):
+    gc = pygsheets.authorize(CLIENT_SECRET_PATH)
+
+    for spreadsheet_id, records in data.items():
+        spreadsheet = gc.open_by_key(spreadsheet_id)
+        record_booking_records(spreadsheet, records)
 
 
 if __name__ == "__main__":
     filepath = parse_args().filepath
-    record_bookings(filepath)
+    processed_data = read_and_process_booking_records(filepath)
+    update_google_spreadsheets(processed_data)
