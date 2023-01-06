@@ -26,6 +26,7 @@ def read_and_process_booking_records(filename):
 
 def update_google_spreadsheets(data):
     gc = pygsheets.authorize(CLIENT_SECRET_PATH)
+    print('Google API client: authorized.')
 
     for spreadsheet_id, records in data.items():
         spreadsheet = gc.open_by_key(spreadsheet_id)
