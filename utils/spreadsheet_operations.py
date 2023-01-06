@@ -2,8 +2,10 @@ import datetime
 import calendar
 import math
 
-import pygsheets
+from datetime import timedelta
 from dateutil import rrule
+
+import pygsheets
 
 from pygsheets.datarange import DataRange
 from pygsheets.cell import Cell
@@ -24,7 +26,7 @@ def get_worksheet_name_by_month(date):
 def get_cells_range_to_update(start_d, end_d, record):
     range_line_number = APARTMENTS_LINES_MAPPING[record['category']][1]
     start_cell = DAYS_TO_COLUMNS_MAPPING[start_d.day] + range_line_number
-    end_cell = DAYS_TO_COLUMNS_MAPPING[end_d.day - 1] + range_line_number
+    end_cell = DAYS_TO_COLUMNS_MAPPING[end_d.day] + range_line_number
     # print(start_cell, end_cell)
     return start_cell, end_cell
 
@@ -35,7 +37,7 @@ def get_cell_address_by_date(date, record):
     line_2_number = APARTMENTS_LINES_MAPPING[record['category']][1]
     cell_1 = DAYS_TO_COLUMNS_MAPPING[date.day] + line_1_number
     cell_2 = DAYS_TO_COLUMNS_MAPPING[date.day] + line_2_number
-    return  cell_1, cell_2
+    return cell_1, cell_2
 
 
 def open_or_create_worksheet(worksheet_name, spreadsheet, worksheets):
@@ -72,48 +74,55 @@ def record_booking_records(spreadsheet, records):
     worksheets = {}  # dict to store opened worksheets for different months (worksheet's name is a key)
 
     for _, record in records.iterrows():
-        start_d = get_date(record['arrival_date'])
-        end_d = get_date(record['leaving_date'])
+        start_date = get_date(record['arrival_date'])
+        end_date = get_date(record['leaving_date']) - timedelta(days=1)  # date of last staying day
 
-        for month_date in rrule.rrule(rrule.MONTHLY, dtstart=start_d, until=end_d):
-            month = month_date.month
+        for month_date in rrule.rrule(
+                rrule.MONTHLY,
+                dtstart=datetime.date(start_date.year, start_date.month, 1),
+                until=end_date
+        ):
+            worksheet_month = month_date.month
+            worksheet_year = month_date.year
             worksheet_name = get_worksheet_name_by_month(month_date)
-            # дублируется проверка
+
             if not worksheets.get(worksheet_name):
                 open_or_create_worksheet(worksheet_name, spreadsheet, worksheets)
 
             # default border values for a range of cells (sets right and left border)
             # these values are changed later if booking period starts and ends in different months.
-            border_values = [0, 1, 0, 1]
+            border_values = [1, 1, 1, 1]
 
-            if start_d.month == month:
-                start_range_d = start_d
+            if start_date.month == worksheet_month:
+                start_range_date = start_date
             else:
-                start_range_d = datetime.date(start_d.year, month, 1)
+                start_range_date = datetime.date(worksheet_year, worksheet_month, 1)
                 border_values[3] = 0
 
-            _, start_cell = get_cell_address_by_date(start_range_d, record)
+            _, start_cell = get_cell_address_by_date(start_range_date, record)
 
-            if end_d.month == month:
-                end_range_d = end_d
+            if end_date.month == worksheet_month:
+                end_range_date = end_date
             else:
-                end_range_d = datetime.date(end_d.year, month, calendar.monthrange(end_d.year, month)[1])
+                end_range_date = datetime.date(
+                    worksheet_year,
+                    worksheet_month,
+                    calendar.monthrange(worksheet_year, worksheet_month)[1]
+                )
                 border_values[1] = 0
 
-            _, end_cell = get_cell_address_by_date(end_range_d, record)
+            _, end_cell = get_cell_address_by_date(end_range_date, record)
 
-            # start_cell, end_cell = get_cells_range_to_update(start_range_d, end_range_d, record)
-
-            price_values = [[record['daily_amount']] * (end_range_d - start_range_d).days]
+            price_values = [[record['daily_amount']] * ((end_range_date - start_range_date).days + 1)]
             update_range_with_values(start_cell, end_cell, worksheets[worksheet_name], price_values, border_values)
 
-        final_amount_cell_address, _ = get_cell_address_by_date(start_d, record)
+        final_amount_cell_address, _ = get_cell_address_by_date(start_date, record)
         update_cell_with_value(
             final_amount_cell_address, record['final_amount'],
-            worksheets[get_worksheet_name_by_month(start_d)]
+            worksheets[get_worksheet_name_by_month(start_date)]
         )
 
-        print(f'booking from {record["source"]} for {record["category"]} ({start_d} - {end_d}) is recorded.')
+        print(f'booking from {record["source"]} for {record["category"]} ({start_date} - {end_date}) is recorded.')
         print(f'total: {record["total_amount"]} -- {record["days"]} day(s) {record["daily_amount"]} each.')
         print()
 
