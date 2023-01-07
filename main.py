@@ -1,9 +1,12 @@
 import argparse
+import datetime
+
 import httplib2
 import logging
 import pygsheets
 
 from constants import CLIENT_SECRET_PATH
+from utils.http_client import make_custom_http
 from utils.parse_bookings import read_bookings_from_file, process_bookings_data
 from utils.spreadsheet_operations import record_booking_records
 
@@ -35,9 +38,9 @@ def read_and_process_booking_records(filename):
 
 def update_google_spreadsheets(data):
     """Transfer records from dataset to Google spreadsheets"""
-    gc = pygsheets.authorize(CLIENT_SECRET_PATH)
-    print('Google API client: authorized.')
+    gc = pygsheets.authorize(CLIENT_SECRET_PATH, http=make_custom_http())
 
+    skipped = []
     # recording is done for each spreadsheet one by one as they are specified in data
     for spreadsheet_id, records in data.items():
         # open spreadsheet by its id (ids stored in constants.py file)
@@ -57,3 +60,4 @@ if __name__ == "__main__":
 
 # 28.12.2022 - 06.01.2023 /Users/marina.korniychuk/Downloads/19057_bookings_20230106193908_1.xlsx
 # 29.11.2022 - 06.01.2023 /Users/marina.korniychuk/Downloads/19057_bookings_20230107002759_1.xlsx
+# 14.12.2022 - 27.12.2022 /Users/marina.korniychuk/Downloads/19057_bookings_20230107031414_1.xlsx
