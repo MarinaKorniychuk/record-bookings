@@ -1,5 +1,6 @@
 import datetime
 import calendar
+import logging
 import math
 
 from datetime import timedelta
@@ -17,6 +18,8 @@ from data.days import DAYS_TO_COLUMNS_MAPPING
 from data.months import MONTHS_TO_NAME_MAPPING
 from utils.date_helper import get_date
 
+
+logger = logging.getLogger('record.bookings')
 
 def get_worksheet_name_by_month(date):
     """Return name of worksheet combining month mapped to russian equivalent with a year
@@ -61,7 +64,7 @@ def open_or_create_worksheet(worksheet_name, spreadsheet, worksheets):
         template = spreadsheet.worksheet('title', TEMPLATE_WORKSHEETS[spreadsheet.id])
         worksheet = spreadsheet.add_worksheet(worksheet_name, src_worksheet=template)
 
-        print(f'NEW WORKSHEET {worksheet_name} IS CREATED IN {spreadsheet.title}.')
+        logger.info(f'NEW WORKSHEET {worksheet_name} IS CREATED IN {spreadsheet.title}.\n')
 
     worksheets[worksheet_name] = worksheet
 
@@ -81,7 +84,7 @@ def update_cell_with_value(address, value, worksheet):
     final_amount_cell.set_value(math.floor(value))
 
 
-def record_booking_records(spreadsheet, records):
+def record_booking_records(spreadsheet, records, skipped):
     worksheets = {}  # dict to store opened worksheets for different months (worksheet's name is a key)
 
     for _, record in records.iterrows():
@@ -140,9 +143,17 @@ def record_booking_records(spreadsheet, records):
                 final_amount_cell_address, record['final_amount'],
                 worksheets[get_worksheet_name_by_month(start_date)]
             )
+
+            logger.info(
+                f'{record["source"]}: {record["category"]} [{start_date} -- {get_date(record["leaving_date"])}] is '
+                f'recorded -- final profit: {record["final_amount"]} -- {record["days"]} day(s) {record["daily_amount"]} each.\n'
+            )
+
         except httplib2.HttpLib2Error as error:
+            logger.error(f'Caught the following error: {error}')
+
             skipped.append(record)
             continue
 
-    print('DOOOOOOOOOOONE')
+    logger.info(f'{spreadsheet.title} is DOOOOOOOOOOONE\n')
 

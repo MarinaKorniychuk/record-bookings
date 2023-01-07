@@ -13,9 +13,8 @@ from utils.spreadsheet_operations import record_booking_records
 
 # httplib2.debuglevel = 1
 
-# logger = logging.getLogger()
-# logger.setLevel(logging.INFO)
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('record.bookings')
 
 def parse_args():
     """Parse arguments"""
@@ -40,13 +39,24 @@ def update_google_spreadsheets(data):
     """Transfer records from dataset to Google spreadsheets"""
     gc = pygsheets.authorize(CLIENT_SECRET_PATH, http=make_custom_http())
 
+    logger.info('Google API client: authorized.')
+    logger.info(f'Started recording data at {datetime.datetime.now().time()}\n')
+
     skipped = []
     # recording is done for each spreadsheet one by one as they are specified in data
     for spreadsheet_id, records in data.items():
-        # open spreadsheet by its id (ids stored in constants.py file)
-        spreadsheet = gc.open_by_key(spreadsheet_id)
-        record_booking_records(spreadsheet, records)
+        try:
+            # open spreadsheet by its id (ids stored in constants.py file)
+            spreadsheet = gc.open_by_key(spreadsheet_id)
+            record_booking_records(spreadsheet, records, skipped)
+        except pygsheets.SpreadsheetNotFound:
+            logger.warning(f'{spreadsheet_id} spreadsheet not found, skip.')
+        except httplib2.HttpLib2Error as error:
+            logger.error(f'Could not open {spreadsheet_id} spreadsheet: {error}')
 
+    logger.info(f'\nFinished recording data at {datetime.datetime.now().time()}')
+
+    logger.info(f'\nSKIPPED RECORDS: \n{skipped}')
 
 def main():
     filepath = parse_args().filepath
