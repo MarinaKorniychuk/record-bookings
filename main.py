@@ -15,11 +15,12 @@ from utils.spreadsheet_operations import record_booking_records
 
 
 def parse_args():
+    """Parse arguments"""
     parser = argparse.ArgumentParser(
         prog='record-bookings',
         description='Fills the bookings spreadsheet with bookings from Bnova spreadsheet.',
     )
-    parser.add_argument('filepath')  # required positional argument
+    parser.add_argument('filepath', help='full path to bnova spreadsheet .xslx file')  # required positional argument
     return parser.parse_args()
 
 
@@ -33,10 +34,13 @@ def read_and_process_booking_records(filename):
 
 
 def update_google_spreadsheets(data):
+    """Transfer records from dataset to Google spreadsheets"""
     gc = pygsheets.authorize(CLIENT_SECRET_PATH)
     print('Google API client: authorized.')
 
+    # recording is done for each spreadsheet one by one as they are specified in data
     for spreadsheet_id, records in data.items():
+        # open spreadsheet by its id (ids stored in constants.py file)
         spreadsheet = gc.open_by_key(spreadsheet_id)
         record_booking_records(spreadsheet, records)
 

@@ -18,21 +18,25 @@ from utils.date_helper import get_date
 
 
 def get_worksheet_name_by_month(date):
+    """Return name of worksheet combining month mapped to russian equivalent with a year
+
+    example: for `date` 2022.12.28
+             return: 'Декабрь 2022'
+    """
     worksheet = f'{MONTHS_TO_NAME_MAPPING[date.month]} {date.year}'
-    # print(f'worksheet by month: {date} -- {worksheet}')
     return worksheet
 
 
-def get_cells_range_to_update(start_d, end_d, record):
-    range_line_number = APARTMENTS_LINES_MAPPING[record['category']][1]
-    start_cell = DAYS_TO_COLUMNS_MAPPING[start_d.day] + range_line_number
-    end_cell = DAYS_TO_COLUMNS_MAPPING[end_d.day] + range_line_number
-    # print(start_cell, end_cell)
-    return start_cell, end_cell
-
-
 def get_cell_address_by_date(date, record):
-    # return tuple of total price and daily price cells addresses.
+    """Return tuple of two cell addresses for a provided date
+    by mapping `record.category` to according line numbers
+               `date.day` to according column
+
+    First cell is from total price line, second is a daily price line
+
+    example: for `date` 2022.12.28 and `record.category` 'СтудСад'
+             return: (AD55, AD56)
+    """
     line_1_number = APARTMENTS_LINES_MAPPING[record['category']][0]
     line_2_number = APARTMENTS_LINES_MAPPING[record['category']][1]
     cell_1 = DAYS_TO_COLUMNS_MAPPING[date.day] + line_1_number
@@ -41,6 +45,10 @@ def get_cell_address_by_date(date, record):
 
 
 def open_or_create_worksheet(worksheet_name, spreadsheet, worksheets):
+    """Open specified worksheet in spreadsheet by its title
+    and save it in worksheets dict for a later use
+
+    If worksheet doesn't exist in spreadsheet, create new one using an empty template from TEMPLATE_WORKSHEETS"""
     # do nothing and return if specified worksheet is already opened and saved in worksheets dict
     if worksheets.get(worksheet_name):
         return
@@ -48,16 +56,17 @@ def open_or_create_worksheet(worksheet_name, spreadsheet, worksheets):
     try:
         worksheet = spreadsheet.worksheet('title', worksheet_name)
     except pygsheets.WorksheetNotFound:
-        # if worksheet for specified month does not exist
         # open template and copy it to create a new worksheet
         template = spreadsheet.worksheet('title', TEMPLATE_WORKSHEETS[spreadsheet.id])
         worksheet = spreadsheet.add_worksheet(worksheet_name, src_worksheet=template)
-        print(f'NEW WORKSHEET {worksheet_name} CREATED.')
+
+        print(f'NEW WORKSHEET {worksheet_name} IS CREATED IN {spreadsheet.title}.')
 
     worksheets[worksheet_name] = worksheet
 
 
 def update_range_with_values(start, end, worksheet, values, update_borders):
+    """Call Google API to update range of cells [start - end] with specified values and borders"""
     cell_range = DataRange(start=start, end=end, worksheet=worksheet)
     cell_range.update_values(values)
     cell_range.update_borders(
@@ -66,6 +75,7 @@ def update_range_with_values(start, end, worksheet, values, update_borders):
 
 
 def update_cell_with_value(address, value, worksheet):
+    """Call Google API to update specified cell value"""
     final_amount_cell = Cell(address, worksheet=worksheet)
     final_amount_cell.set_value(math.floor(value))
 
@@ -77,6 +87,11 @@ def record_booking_records(spreadsheet, records):
         start_date = get_date(record['arrival_date'])
         end_date = get_date(record['leaving_date']) - timedelta(days=1)  # date of last staying day
 
+        # iterate over every month of booking record
+        # example: for record with dates `2022.12.28` - `2023.02.04` would iterate over the following values:
+        #          month_date [`2022.12.01`, `2023.01.01`, `2023.02.01`]
+        # the day of `month_date` doesn't matter, we only need month value to determine worksheet
+        # this allows to complete recording for every month that is covered in booking period
         for month_date in rrule.rrule(
                 rrule.MONTHLY,
                 dtstart=datetime.date(start_date.year, start_date.month, 1),
@@ -93,6 +108,7 @@ def record_booking_records(spreadsheet, records):
             # these values are changed later if booking period starts and ends in different months.
             border_values = [1, 1, 1, 1]
 
+            # define call addresses of range for CURRENT ITERATION month
             if start_date.month == worksheet_month:
                 start_range_date = start_date
             else:
@@ -116,6 +132,7 @@ def record_booking_records(spreadsheet, records):
             price_values = [[record['daily_amount']] * ((end_range_date - start_range_date).days + 1)]
             update_range_with_values(start_cell, end_cell, worksheets[worksheet_name], price_values, border_values)
 
+        # find and fill final_amount cell with value
         final_amount_cell_address, _ = get_cell_address_by_date(start_date, record)
         update_cell_with_value(
             final_amount_cell_address, record['final_amount'],
