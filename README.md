@@ -1,6 +1,6 @@
 # record-bookings
 
-A script to transfers records from Bnova spreadsheet to Google spreadsheets.
+A script to transfer records from Bnova spreadsheet to Google Sheets.
 
 ## Installation
 
@@ -13,10 +13,10 @@ pip install requirements.txt
 ## Basic Usage
 
 
-1. To authorize google sheets:
+1. To authorize Google Sheets:
 
    Create a developer account and create OAuth Client ID credentials for a Desktop application. These credentials give the python script access to a Google account ([instruction](https://pygsheets.readthedocs.io/en/stable/authorization.html#oauth-credentials)).
-2. Download `.json` file with a client key and copy it to secret/desktop_client_secret.json file in the project.
+2. Download `.json` file with a client key and copy it to `secret/desktop_client_secret.json` file in the project.
 3. Download spreadsheet from Bnova for desired period.
 
     _Note: Make sure to exclude records in 'cancelled' status._
