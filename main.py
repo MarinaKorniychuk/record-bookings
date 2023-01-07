@@ -8,7 +8,7 @@ from utils.parse_bookings import read_bookings_from_file, process_bookings_data
 from utils.spreadsheet_operations import record_booking_records
 
 
-httplib2.debuglevel = 1
+# httplib2.debuglevel = 1
 
 # logger = logging.getLogger()
 # logger.setLevel(logging.INFO)
@@ -41,7 +41,7 @@ def update_google_spreadsheets(data):
         record_booking_records(spreadsheet, records)
 
 
-if __name__ == "__main__":
+def main():
     filepath = parse_args().filepath
     processed_data = read_and_process_booking_records(filepath)
     update_google_spreadsheets(processed_data)
