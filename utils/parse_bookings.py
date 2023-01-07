@@ -43,9 +43,9 @@ def process_bookings_data(bookings):
     bookings['daily_amount'] = bookings.apply(lambda row: calculate_daily_amount(row), axis=1)
 
     data = {
-        RADIK_SPREADSHEET_ID: bookings.query("category in @RADIK_APARTMENTS"),
-        DINARA_SPREADSHEET_ID: bookings.query("category in @DINARA_APARTMENTS"),
         SEREBRYANICHESKIY_SPREADSHEET_ID: bookings.query("category in @SEREBRYANICHESKIY_APARTMENTS"),
+        DINARA_SPREADSHEET_ID: bookings.query("category in @DINARA_APARTMENTS"),
+        RADIK_SPREADSHEET_ID: bookings.query("category in @RADIK_APARTMENTS"),
     }
 
     return data
