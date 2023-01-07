@@ -1,9 +1,17 @@
 import argparse
+import httplib2
+import logging
 import pygsheets
 
 from constants import CLIENT_SECRET_PATH
 from utils.parse_bookings import read_bookings_from_file, process_bookings_data
 from utils.spreadsheet_operations import record_booking_records
+
+
+httplib2.debuglevel = 1
+
+# logger = logging.getLogger()
+# logger.setLevel(logging.INFO)
 
 
 def parse_args():
@@ -37,3 +45,11 @@ if __name__ == "__main__":
     filepath = parse_args().filepath
     processed_data = read_and_process_booking_records(filepath)
     update_google_spreadsheets(processed_data)
+
+
+if __name__ == "__main__":
+    main()
+
+
+# 28.12.2022 - 06.01.2023 /Users/marina.korniychuk/Downloads/19057_bookings_20230106193908_1.xlsx
+# 29.11.2022 - 06.01.2023 /Users/marina.korniychuk/Downloads/19057_bookings_20230107002759_1.xlsx

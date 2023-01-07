@@ -122,8 +122,8 @@ def record_booking_records(spreadsheet, records):
             worksheets[get_worksheet_name_by_month(start_date)]
         )
 
-        print(f'booking from {record["source"]} for {record["category"]} ({start_date} - {end_date}) is recorded.')
-        print(f'total: {record["total_amount"]} -- {record["days"]} day(s) {record["daily_amount"]} each.')
+        print(f'booking from {record["source"]} for {record["category"]} ({start_date} - {get_date(record["leaving_date"])}) is recorded.')
+        print(f'final profit: {record["final_amount"]} -- {record["days"]} day(s) {record["daily_amount"]} each.')
         print()
 
     print('DOOOOOOOOOOONE')
