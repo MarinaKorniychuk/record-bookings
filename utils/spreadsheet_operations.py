@@ -2,6 +2,7 @@ import datetime
 import calendar
 import logging
 import math
+import time
 
 from datetime import timedelta
 from dateutil import rrule
@@ -89,6 +90,8 @@ def record_booking_records(spreadsheet, records, skipped):
 
     for _, record in records.iterrows():
         try:
+            start_time = time.time()
+
             start_date = get_date(record['arrival_date'])
             end_date = get_date(record['leaving_date']) - timedelta(days=1)  # date of last staying day
 
@@ -148,6 +151,9 @@ def record_booking_records(spreadsheet, records, skipped):
                 f'{record["source"]}: {record["category"]} [{start_date} -- {get_date(record["leaving_date"])}] is '
                 f'recorded -- final profit: {record["final_amount"]} -- {record["days"]} day(s) {record["daily_amount"]} each.\n'
             )
+            logger.info(f'{time.time() - start_time} seconds\n')
+
+            time.sleep(2)
 
         except httplib2.HttpLib2Error as error:
             logger.error(f'Caught the following error: {error}')
@@ -155,5 +161,5 @@ def record_booking_records(spreadsheet, records, skipped):
             skipped.append(record)
             continue
 
-    logger.info(f'{spreadsheet.title} is DOOOOOOOOOOONE\n')
+    logger.info(f'{spreadsheet.title} IS DONE\n')
 
