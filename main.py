@@ -1,7 +1,8 @@
 import logging
 
+from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtWidgets import (
-    QFileDialog, QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit, )
+    QFileDialog, QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit, QTextEdit, )
 
 import sys
 
@@ -9,9 +10,25 @@ from record_bookings import record_bookings
 
 
 logger = logging.getLogger('record.bookings')
+logging.basicConfig()
 logger.setLevel(logging.DEBUG)
 # consoleHandler = logging.StreamHandler()
 # logger.addHandler(consoleHandler)
+
+
+class Thread(QThread):
+    log = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super(Thread, self).__init__(parent)
+        self.filename = None
+
+    def setFile(self, filename):
+        if not self.isRunning():
+            self.filename = filename
+
+    def run(self):
+        record_bookings(self.filename)
 
 class QTextEditLogger(logging.Handler):
     def __init__(self, parent):
@@ -28,6 +45,8 @@ class BookingsWindow(QWidget):
     def __init__(self, parent=None):
         super(BookingsWindow, self).__init__(parent)
 
+        self._worker = Thread(self)
+
         layout = QVBoxLayout()
 
         self.filename = QLabel('/Users/marina.korniychuk/Downloads/19057_bookings_20230107031414_1.xlsx')
@@ -35,17 +54,17 @@ class BookingsWindow(QWidget):
         self.btnSelect = QPushButton('Select file')
         self.btnSelect.clicked.connect(self.getfile)
 
-        self.btnStart = QPushButton('Start')
-        self.btnStart.clicked.connect(self.test)
+        self.btnStartWorker = QPushButton('Start Worker')
+        self.btnStartWorker.clicked.connect(self.start_worker)
 
         formLayout = QFormLayout()
         formLayout.addRow(QLabel('Record bookings from:'))
         formLayout.addRow('File:', self.filename)
         formLayout.addRow(self.btnSelect)
-        formLayout.addRow(self.btnStart)
+        formLayout.addRow(self.btnStartWorker)
 
         logTextBox = QTextEditLogger(self)
-        logTextBox.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logTextBox.setFormatter(logging.Formatter('%(message)s'))
 
         logger.addHandler(logTextBox)
         logger.setLevel(logging.DEBUG)
@@ -58,14 +77,13 @@ class BookingsWindow(QWidget):
         self.setLayout(layout)
         self.setWindowTitle("Bookings")
 
-    def test(self):
-        # logger = logging.getLogger('record.bookings')
-        logger.debug('damn, a bug')
-        logger.info('something to remember')
-        logging.warning('that\'s not right')
-        logging.error('foobar')
+    def process(self):
+        self._worker.setFile(self.filename.text())
+        self._worker.start()
 
-        self.record_bookings()
+    def start_worker(self):
+        if not self._worker.isRunning():
+            self.process()
 
     def getfile(self):
         fname = QFileDialog.getOpenFileName(
