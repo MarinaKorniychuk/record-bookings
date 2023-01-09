@@ -50,16 +50,7 @@ class BookingsWindow(QWidget):
         logger.addHandler(logTextBox)
         logger.setLevel(logging.DEBUG)
 
-        # self._button = QPushButton(self)
-        # self._button.setText('Test Me')
-
-        # Add the new logging box widget to the layout
         formLayout.addRow(logTextBox.widget)
-        # layout.addWidget(self._button)
-        # self.setLayout(layout)
-
-        # Connect signal to slot
-        # self._button.clicked.connect(self.test)
 
         layout.addLayout(formLayout)
 
