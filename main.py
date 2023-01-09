@@ -1,66 +1,99 @@
-import argparse
-import datetime
-
-import httplib2
 import logging
-import pygsheets
 
-from constants import CLIENT_SECRET_PATH
-from utils.http_client import make_custom_http
-from utils.parse_bookings import read_bookings_from_file, process_bookings_data
-from utils.spreadsheet_operations import record_booking_records
+from PyQt6.QtWidgets import (
+    QFileDialog, QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit, )
+
+import sys
+
+from record_bookings import record_bookings
 
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('record.bookings')
+logger.setLevel(logging.DEBUG)
+# consoleHandler = logging.StreamHandler()
+# logger.addHandler(consoleHandler)
 
-def parse_args():
-    """Parse arguments"""
-    parser = argparse.ArgumentParser(
-        prog='record-bookings',
-        description='Fills the bookings spreadsheet with bookings from Bnova spreadsheet.',
-    )
-    parser.add_argument('filepath', help='full path to bnova spreadsheet .xslx file')  # required positional argument
-    return parser.parse_args()
+class QTextEditLogger(logging.Handler):
+    def __init__(self, parent):
+        super().__init__()
+        self.widget = QPlainTextEdit(parent)
+        self.widget.setReadOnly(True)
 
-
-def read_and_process_booking_records(filename):
-    # load all records from spreadsheet
-    booking_records = read_bookings_from_file(filename)
-
-    # calculate final amount without commission and daily profit
-    processed_records = process_bookings_data(booking_records)
-    return processed_records
+    def emit(self, record):
+        msg = self.format(record)
+        self.widget.appendPlainText(msg)
 
 
-def update_google_spreadsheets(data):
-    """Transfer records from dataset to Google spreadsheets"""
-    gc = pygsheets.authorize(CLIENT_SECRET_PATH, http=make_custom_http())
+class BookingsWindow(QWidget):
+    def __init__(self, parent=None):
+        super(BookingsWindow, self).__init__(parent)
 
-    logger.info('Google API client: authorized.')
-    logger.info(f'Started recording data at {datetime.datetime.now().time()}\n')
+        layout = QVBoxLayout()
 
-    skipped = []
-    # recording is done for each spreadsheet one by one as they are specified in data
-    for spreadsheet_id, records in data.items():
-        try:
-            # open spreadsheet by its id (ids stored in constants.py file)
-            spreadsheet = gc.open_by_key(spreadsheet_id)
-            record_booking_records(spreadsheet, records, skipped)
-        except pygsheets.SpreadsheetNotFound:
-            logger.warning(f'{spreadsheet_id} spreadsheet not found, skip.')
-        except httplib2.HttpLib2Error as error:
-            logger.error(f'Could not open {spreadsheet_id} spreadsheet: {error}')
+        self.filename = QLabel('/Users/marina.korniychuk/Downloads/19057_bookings_20230107031414_1.xlsx')
 
-    logger.info(f'\nFinished recording data at {datetime.datetime.now().time()}')
+        self.btnSelect = QPushButton('Select file')
+        self.btnSelect.clicked.connect(self.getfile)
 
-    logger.info(f'\nSKIPPED RECORDS: \n{skipped}')
+        self.btnStart = QPushButton('Start')
+        self.btnStart.clicked.connect(self.test)
+
+        formLayout = QFormLayout()
+        formLayout.addRow(QLabel('Record bookings from:'))
+        formLayout.addRow('File:', self.filename)
+        formLayout.addRow(self.btnSelect)
+        formLayout.addRow(self.btnStart)
+
+        logTextBox = QTextEditLogger(self)
+        logTextBox.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+        logger.addHandler(logTextBox)
+        logger.setLevel(logging.DEBUG)
+
+        # self._button = QPushButton(self)
+        # self._button.setText('Test Me')
+
+        # Add the new logging box widget to the layout
+        formLayout.addRow(logTextBox.widget)
+        # layout.addWidget(self._button)
+        # self.setLayout(layout)
+
+        # Connect signal to slot
+        # self._button.clicked.connect(self.test)
+
+        layout.addLayout(formLayout)
+
+        self.setGeometry(300, 300, 550, 450)
+        self.setLayout(layout)
+        self.setWindowTitle("Bookings")
+
+    def test(self):
+        # logger = logging.getLogger('record.bookings')
+        logger.debug('damn, a bug')
+        logger.info('something to remember')
+        logging.warning('that\'s not right')
+        logging.error('foobar')
+
+        self.record_bookings()
+
+    def getfile(self):
+        fname = QFileDialog.getOpenFileName(
+            self,
+            'Open file',
+            '/Users/marina.korniychuk/Downloads', "Excel Files (*.xls *.xml *.xlsx *.xlsm)"
+        )
+        self.filename.setText(fname[0])
+
+    def record_bookings(self):
+        record_bookings(self.filename.text())
 
 def main():
-    filepath = parse_args().filepath
-    processed_data = read_and_process_booking_records(filepath)
-    update_google_spreadsheets(processed_data)
+    app = QApplication(sys.argv)
+    ex = BookingsWindow()
+    ex.show()
+    sys.exit(app.exec())
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
+
