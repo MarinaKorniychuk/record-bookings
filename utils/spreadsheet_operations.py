@@ -148,10 +148,10 @@ def record_booking_records(spreadsheet, records, skipped):
             )
 
             logger.info(
-                f'{record["source"]}: {record["category"]} [{start_date} -- {get_date(record["leaving_date"])}] is '
-                f'recorded -- final profit: {record["final_amount"]} -- {record["days"]} day(s) {record["daily_amount"]} each.\n'
+                f'{record["source"]}: {record["category"]} [{start_date} - {get_date(record["leaving_date"])}] '
+                f'profit: {record["final_amount"]} ({record["days"]} day(s) for {record["daily_amount"]}) '
+                f'({format(time.time() - start_time, ".2f")}s).\n'
             )
-            logger.info(f'{time.time() - start_time} seconds\n')
 
             time.sleep(2)
 

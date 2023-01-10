@@ -41,11 +41,11 @@ def update_google_spreadsheets(data):
         except httplib2.HttpLib2Error as error:
             logger.error(f'Could not open {spreadsheet_id} spreadsheet: {error}')
 
-    logger.info(f'Finished recording data at {datetime.datetime.now().time()}')
+    logger.info(f'Finished recording data at {datetime.datetime.now().time()}\n')
 
-    logger.info(f'\nSKIPPED RECORDS: \n{skipped}')
+    logger.info(f'SKIPPED RECORDS: \n{skipped}')
 
-def record_bookings(filepath, logger=None):
+def record_bookings(filepath):
     processed_data = read_and_process_booking_records(filepath)
     update_google_spreadsheets(processed_data)
 

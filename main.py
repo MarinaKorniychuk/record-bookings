@@ -16,14 +16,15 @@ logger.setLevel(logging.DEBUG)
 # logger.addHandler(consoleHandler)
 
 
-class Thread(QThread):
+class BookingWorker(QThread):
+    """Thread to execute bookings recording."""
     log = pyqtSignal(str)
 
     def __init__(self, parent=None):
-        super(Thread, self).__init__(parent)
+        super(BookingWorker, self).__init__(parent)
         self.filename = None
 
-    def setFile(self, filename):
+    def set_file(self, filename):
         if not self.isRunning():
             self.filename = filename
 
@@ -31,6 +32,7 @@ class Thread(QThread):
         record_bookings(self.filename)
 
 class QTextEditLogger(logging.Handler):
+    """Customized handler to output logs in text widget in real-time."""
     def __init__(self, parent):
         super().__init__()
         self.widget = QPlainTextEdit(parent)
@@ -39,53 +41,54 @@ class QTextEditLogger(logging.Handler):
     def emit(self, record):
         msg = self.format(record)
         self.widget.appendPlainText(msg)
+        self.widget.centerCursor()  # scroll to the bottom
 
 
 class BookingsWindow(QWidget):
     def __init__(self, parent=None):
         super(BookingsWindow, self).__init__(parent)
 
-        self._worker = Thread(self)
-
         layout = QVBoxLayout()
+
+        self.booking_worker = BookingWorker(self)
 
         self.filename = QLabel('/Users/marina.korniychuk/Downloads/19057_bookings_20230107031414_1.xlsx')
 
         self.btnSelect = QPushButton('Select file')
-        self.btnSelect.clicked.connect(self.getfile)
+        self.btnSelect.clicked.connect(self.get_file)
 
         self.btnStartWorker = QPushButton('Start Worker')
-        self.btnStartWorker.clicked.connect(self.start_worker)
+        self.btnStartWorker.clicked.connect(self.start_booking_worker)
 
-        formLayout = QFormLayout()
-        formLayout.addRow(QLabel('Record bookings from:'))
-        formLayout.addRow('File:', self.filename)
-        formLayout.addRow(self.btnSelect)
-        formLayout.addRow(self.btnStartWorker)
+        self.logTextBox = QTextEditLogger(self)
+        self.configure_app_logger()
 
-        logTextBox = QTextEditLogger(self)
-        logTextBox.setFormatter(logging.Formatter('%(message)s'))
-
-        logger.addHandler(logTextBox)
-        logger.setLevel(logging.DEBUG)
-
-        formLayout.addRow(logTextBox.widget)
-
-        layout.addLayout(formLayout)
+        self.formLayout = QFormLayout()
+        self.set_app_layout()
+        layout.addLayout(self.formLayout)
 
         self.setGeometry(300, 300, 550, 450)
         self.setLayout(layout)
         self.setWindowTitle("Bookings")
 
-    def process(self):
-        self._worker.setFile(self.filename.text())
-        self._worker.start()
 
-    def start_worker(self):
-        if not self._worker.isRunning():
-            self.process()
+    def set_app_layout(self):
+        self.formLayout.addRow(QLabel('Record bookings from:'))
+        self.formLayout.addRow('File:', self.filename)
+        self.formLayout.addRow(self.btnSelect)
+        self.formLayout.addRow(self.btnStartWorker)
+        self.formLayout.addRow(self.logTextBox.widget)
+    def configure_app_logger(self):
+        self.logTextBox.setFormatter(logging.Formatter('%(message)s'))
+        logger.addHandler(self.logTextBox)
+        logger.setLevel(logging.DEBUG)
 
-    def getfile(self):
+    def start_booking_worker(self):
+        if not self.booking_worker.isRunning():
+            self.booking_worker.set_file(self.filename.text())
+            self.booking_worker.start()
+
+    def get_file(self):
         fname = QFileDialog.getOpenFileName(
             self,
             'Open file',
