@@ -51,6 +51,7 @@ class BookingsWindow(QWidget):
         layout = QVBoxLayout()
 
         self.booking_worker = BookingWorker(self)
+        # self.expense_worker = ExpenseWorker(self)
 
         self.filename = QLabel('/Users/marina.korniychuk/Downloads/19057_bookings_20230107031414_1.xlsx')
 
@@ -87,6 +88,10 @@ class BookingsWindow(QWidget):
         if not self.booking_worker.isRunning():
             self.booking_worker.set_file(self.filename.text())
             self.booking_worker.start()
+
+    # def start_expense_worker(self):
+    #     if not self.booking_worker.isRunning():
+    #         self.booking_worker.start()
 
     def get_file(self):
         fname = QFileDialog.getOpenFileName(

@@ -120,7 +120,7 @@ def update_google_spreadsheets(data):
         try:
             # open spreadsheet by its id (ids stored in constants.py file)
             spreadsheet = gc.open_by_key(spreadsheet_id)
-            record_profits_to_spreadsheet(spreadsheet, records.head, skipped)
+            record_profits_to_spreadsheet(spreadsheet, records.head(1), skipped)
         except pygsheets.SpreadsheetNotFound:
             logger.warning(f'{spreadsheet_id} spreadsheet not found, skip.')
             pass
