@@ -1,6 +1,5 @@
 import logging
 
-import pandas as pd
 import requests
 
 BNOVA_AUTH_URL = 'https://online.bnovo.ru/'
@@ -45,7 +44,7 @@ class BnovaClient:
             'order_by': 'create_date.desc',
         }
 
-    def get_bookings(self, arrival_from='01.12.2022', arrival_to='02.12.2022'):
+    def get_bookings_data(self, arrival_from, arrival_to):
 
         self.authorize()
 
@@ -62,19 +61,5 @@ class BnovaClient:
                 bookings += response['bookings']
 
         print('total items: ', len(bookings))
-
-        bookings = pd.DataFrame.from_records(
-            bookings,
-            columns=['source_id', 'arrival', 'departure', 'prices_rooms_total', 'initial_room_type_name']
-        )
-
-        column_names = ['source', 'arrival_date', 'leaving_date', 'total_amount', 'category']
-        bookings = bookings.set_axis(column_names, axis=1, copy=False)
-
-        bookings.loc[bookings["source"] == '356', "source"] = 'Ostrovok'
-        bookings.loc[bookings["source"] == '14', "source"] = 'Sutochno'
-        bookings.loc[bookings["source"] == '0', "source"] = 'Прямой'
-
-        print(bookings.head())
 
         return bookings

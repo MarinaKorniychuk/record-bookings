@@ -10,7 +10,7 @@ import sys
 
 from clients.bnova_client import BnovaClient
 from record_bookings import record_bookings
-from utils.parse_bookings import process_bookings_data
+from utils.process_bookings_data import process_bookings_data
 
 logger = logging.getLogger('record.bookings')
 logging.basicConfig()
@@ -90,7 +90,7 @@ class BookingsWindow(QWidget):
         bnova_client = BnovaClient()
         arrival_from = datetime.date(*self.arrival_from_date.date().getDate())
         arrival_to = datetime.date(*self.arrival_to_date.date().getDate())
-        bookings = bnova_client.get_bookings(
+        bookings = bnova_client.get_bookings_data(
             arrival_from.strftime('%d.%m.%Y'),
             arrival_to.strftime('%d.%m.%Y')
         )
