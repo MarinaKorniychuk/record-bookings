@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QThread, pyqtSignal
 
 from clients.bnova_client import BnovaClient
-from record_bookings import record_bookings
+from record_bookings import update_google_spreadsheets
 from utils.process_bookings_data import process_bookings_data
 
 
@@ -24,4 +24,4 @@ class BookingWorker(QThread):
         raw_data = self.bnova_client.get_bookings_data(self.arrival_from, self.arrival_to)
         bookings_data = process_bookings_data(raw_data)
 
-        record_bookings(bookings_data)
+        update_google_spreadsheets(bookings_data)

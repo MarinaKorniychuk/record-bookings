@@ -121,11 +121,6 @@ def update_google_spreadsheets(data):
 
     logger.info(f'SKIPPED RECORDS: \n{skipped}')
 
-
-def record_bookings(bookings):
-    update_google_spreadsheets(bookings)
-
-
 # 28.12.2022 - 06.01.2023 /Users/marina.korniychuk/Downloads/19057_bookings_20230106193908_1.xlsx
 # 29.11.2022 - 06.01.2023 /Users/marina.korniychuk/Downloads/19057_bookings_20230107002759_1.xlsx
 # 14.12.2022 - 27.12.2022 /Users/marina.korniychuk/Downloads/19057_bookings_20230107031414_1.xlsx
