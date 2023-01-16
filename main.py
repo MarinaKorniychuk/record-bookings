@@ -1,16 +1,11 @@
-import logging
 import datetime
-
-from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtCore import QThread, pyqtSignal
-from PyQt6.QtWidgets import (
-    QFileDialog, QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit, QTextEdit, )
-
+import logging
 import sys
 
-from clients.bnova_client import BnovaClient
-from record_bookings import record_bookings
-from utils.process_bookings_data import process_bookings_data
+from PyQt6 import QtWidgets, QtCore
+from PyQt6.QtWidgets import (QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit)
+
+from workers.booking_worker import BookingWorker
 
 logger = logging.getLogger('record.bookings')
 logging.basicConfig()
@@ -18,21 +13,6 @@ logger.setLevel(logging.DEBUG)
 # consoleHandler = logging.StreamHandler()
 # logger.addHandler(consoleHandler)
 
-
-class BookingWorker(QThread):
-    """Thread to execute bookings recording."""
-    log = pyqtSignal(str)
-
-    def __init__(self, parent=None):
-        super(BookingWorker, self).__init__(parent)
-        self.bookings = []
-
-    def set_bookings(self, bookings):
-        if not self.isRunning():
-            self.bookings = bookings
-
-    def run(self):
-        record_bookings(self.bookings)
 
 class QTextEditLogger(logging.Handler):
     """Customized handler to output logs in text widget in real-time."""
@@ -87,17 +67,11 @@ class BookingsWindow(QWidget):
         logger.setLevel(logging.DEBUG)
 
     def start_booking_worker(self):
-        bnova_client = BnovaClient()
         arrival_from = datetime.date(*self.arrival_from_date.date().getDate())
         arrival_to = datetime.date(*self.arrival_to_date.date().getDate())
-        bookings = bnova_client.get_bookings_data(
-            arrival_from.strftime('%d.%m.%Y'),
-            arrival_to.strftime('%d.%m.%Y')
-        )
-        bookings = process_bookings_data(bookings)
 
         if not self.booking_worker.isRunning():
-            self.booking_worker.set_bookings(bookings)
+            self.booking_worker.set_dates(arrival_from, arrival_to)
             self.booking_worker.start()
 
     # def start_expense_worker(self):
