@@ -16,7 +16,7 @@ TEMPLATE_WORKSHEETS = {
 
 DIRECT = 'Прямой'
 SUTOCHNO = 'Sutochno'
-OSTROVOK = 'Ostrovok (Emerging Travel Group)'
+OSTROVOK = 'Ostrovok'
 
 COMMISSION_MAP = {
     DIRECT: 0,

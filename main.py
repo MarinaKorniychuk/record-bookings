@@ -1,13 +1,16 @@
 import logging
+import datetime
 
+from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtWidgets import (
     QFileDialog, QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit, QTextEdit, )
 
 import sys
 
+from clients.bnova_client import BnovaClient
 from record_bookings import record_bookings
-
+from utils.parse_bookings import process_bookings_data
 
 logger = logging.getLogger('record.bookings')
 logging.basicConfig()
@@ -22,14 +25,14 @@ class BookingWorker(QThread):
 
     def __init__(self, parent=None):
         super(BookingWorker, self).__init__(parent)
-        self.filename = None
+        self.bookings = []
 
-    def set_file(self, filename):
+    def set_bookings(self, bookings):
         if not self.isRunning():
-            self.filename = filename
+            self.bookings = bookings
 
     def run(self):
-        record_bookings(self.filename)
+        record_bookings(self.bookings)
 
 class QTextEditLogger(logging.Handler):
     """Customized handler to output logs in text widget in real-time."""
@@ -50,15 +53,15 @@ class BookingsWindow(QWidget):
 
         layout = QVBoxLayout()
 
+        self.arrival_from_date = QtWidgets.QDateEdit(calendarPopup=True)
+        self.arrival_from_date.setDateTime(QtCore.QDateTime.currentDateTime())
+        self.arrival_to_date = QtWidgets.QDateEdit(calendarPopup=True)
+        self.arrival_to_date.setDateTime(QtCore.QDateTime.currentDateTime())
+
         self.booking_worker = BookingWorker(self)
         # self.expense_worker = ExpenseWorker(self)
 
-        self.filename = QLabel('/Users/marina.korniychuk/Downloads/19057_bookings_20230107031414_1.xlsx')
-
-        self.btnSelect = QPushButton('Select file')
-        self.btnSelect.clicked.connect(self.get_file)
-
-        self.btnStartWorker = QPushButton('Start Worker')
+        self.btnStartWorker = QPushButton('Заполнить таблицы бронированиями')
         self.btnStartWorker.clicked.connect(self.start_booking_worker)
 
         self.logTextBox = QTextEditLogger(self)
@@ -72,37 +75,35 @@ class BookingsWindow(QWidget):
         self.setLayout(layout)
         self.setWindowTitle("Bookings")
 
-
     def set_app_layout(self):
-        self.formLayout.addRow(QLabel('Record bookings from:'))
-        self.formLayout.addRow('File:', self.filename)
-        self.formLayout.addRow(self.btnSelect)
+        self.formLayout.addRow(QLabel('Выбор периода заезда: с'), self.arrival_from_date)
+        self.formLayout.addRow(QLabel('по'), self.arrival_to_date)
         self.formLayout.addRow(self.btnStartWorker)
         self.formLayout.addRow(self.logTextBox.widget)
+
     def configure_app_logger(self):
         self.logTextBox.setFormatter(logging.Formatter('%(message)s'))
         logger.addHandler(self.logTextBox)
         logger.setLevel(logging.DEBUG)
 
     def start_booking_worker(self):
+        bnova_client = BnovaClient()
+        arrival_from = datetime.date(*self.arrival_from_date.date().getDate())
+        arrival_to = datetime.date(*self.arrival_to_date.date().getDate())
+        bookings = bnova_client.get_bookings(
+            arrival_from.strftime('%d.%m.%Y'),
+            arrival_to.strftime('%d.%m.%Y')
+        )
+        bookings = process_bookings_data(bookings)
+
         if not self.booking_worker.isRunning():
-            self.booking_worker.set_file(self.filename.text())
+            self.booking_worker.set_bookings(bookings)
             self.booking_worker.start()
 
     # def start_expense_worker(self):
     #     if not self.booking_worker.isRunning():
     #         self.booking_worker.start()
 
-    def get_file(self):
-        fname = QFileDialog.getOpenFileName(
-            self,
-            'Open file',
-            '/Users/marina.korniychuk/Downloads', "Excel Files (*.xls *.xml *.xlsx *.xlsm)"
-        )
-        self.filename.setText(fname[0])
-
-    def record_bookings(self):
-        record_bookings(self.filename.text())
 
 def main():
     app = QApplication(sys.argv)

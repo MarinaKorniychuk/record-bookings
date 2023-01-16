@@ -8,30 +8,13 @@ from constants import BNOVA_SHEET_NAME, COMMISSION_MAP, RADIK_SPREADSHEET_ID, DI
 from utils.date_helper import calculate_amount_of_days
 
 
-def read_bookings_from_file(filename):
-    """Load file with booking records, only load meaningful columns
-    Rename columns, remove records with 0 in Итого column to avoid processing cancelled records with 0 profit."""
-    bookings = pd.read_excel(
-        filename,
-        sheet_name=BNOVA_SHEET_NAME,
-        usecols=['Источник', 'Дата брони', 'Заезд', 'Выезд', 'Категория', 'Итого']
-    )
-    column_names = ['source', 'booking_data', 'arrival_date', 'leaving_date', 'category', 'total_amount']
-    bookings = bookings.set_axis(column_names, axis=1, copy=False)
-
-    # do nothing for cancelled bookings, remove from data
-    bookings = bookings[bookings['total_amount'] != 0]
-
-    return bookings
-
-
 def calculate_profit_amount(row):
     """Maps source (источник бронирования) with commission value and calculated final profit amount"""
-    return row['total_amount'] * (1 - COMMISSION_MAP[row['source']])
+    return float(row['total_amount']) * (1 - COMMISSION_MAP[row['source']])
 
 
 def calculate_daily_amount(row):
-    return math.floor(row['final_amount'] / row['days'])
+    return math.floor(float(row['final_amount']) / row['days'])
 
 
 def process_bookings_data(bookings):

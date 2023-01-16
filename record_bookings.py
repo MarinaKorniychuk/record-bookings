@@ -12,20 +12,10 @@ from dateutil import rrule
 from constants import CLIENT_SECRET_PATH
 from utils.date_helper import get_date
 from clients.http_client import make_custom_http
-from utils.parse_bookings import read_bookings_from_file, process_bookings_data
 from utils.spreadsheet_operations import get_worksheet_name_by_month, open_or_create_worksheet, \
     get_cell_address_by_date, update_range_with_values, update_cell_with_value
 
 logger = logging.getLogger('record.bookings')
-
-
-def read_and_process_booking_records(filename):
-    # load all records from spreadsheet
-    booking_records = read_bookings_from_file(filename)
-
-    # calculate final amount without commission and daily profit
-    processed_records = process_bookings_data(booking_records)
-    return processed_records
 
 
 def record_profits_to_spreadsheet(spreadsheet, records, skipped):
@@ -120,7 +110,7 @@ def update_google_spreadsheets(data):
         try:
             # open spreadsheet by its id (ids stored in constants.py file)
             spreadsheet = gc.open_by_key(spreadsheet_id)
-            record_profits_to_spreadsheet(spreadsheet, records.head(1), skipped)
+            record_profits_to_spreadsheet(spreadsheet, records, skipped)
         except pygsheets.SpreadsheetNotFound:
             logger.warning(f'{spreadsheet_id} spreadsheet not found, skip.')
             pass
@@ -131,9 +121,9 @@ def update_google_spreadsheets(data):
 
     logger.info(f'SKIPPED RECORDS: \n{skipped}')
 
-def record_bookings(filepath):
-    processed_data = read_and_process_booking_records(filepath)
-    update_google_spreadsheets(processed_data)
+
+def record_bookings(bookings):
+    update_google_spreadsheets(bookings)
 
 
 # 28.12.2022 - 06.01.2023 /Users/marina.korniychuk/Downloads/19057_bookings_20230106193908_1.xlsx
