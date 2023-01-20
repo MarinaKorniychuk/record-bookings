@@ -6,6 +6,7 @@ from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import (QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit)
 
 from workers.booking_worker import BookingWorker
+from workers.expense_worker import ExpenseWorker
 
 logger = logging.getLogger('record.bookings')
 logging.basicConfig()
@@ -39,10 +40,13 @@ class BookingsWindow(QWidget):
         self.arrival_to_date.setDateTime(QtCore.QDateTime.currentDateTime())
 
         self.booking_worker = BookingWorker(self)
-        # self.expense_worker = ExpenseWorker(self)
+        self.expense_worker = ExpenseWorker(self)
 
         self.btnStartBookingWorker = QPushButton('Заполнить приходы')
         self.btnStartBookingWorker.clicked.connect(self.start_booking_worker)
+
+        self.btnStartExpenseWorker = QPushButton('Заполнить расходы')
+        self.btnStartExpenseWorker.clicked.connect(self.start_expense_worker)
 
         self.logTextBox = QTextEditLogger(self)
         self.configure_app_logger()
@@ -61,6 +65,8 @@ class BookingsWindow(QWidget):
         self.formLayout.addRow(QLabel('по '), self.arrival_to_date)
         self.formLayout.addRow(self.btnStartBookingWorker)
 
+        self.formLayout.addRow(self.btnStartExpenseWorker)
+
         self.formLayout.addRow(self.logTextBox.widget)
 
     def configure_app_logger(self):
@@ -72,13 +78,16 @@ class BookingsWindow(QWidget):
         arrival_from = datetime.date(*self.arrival_from_date.date().getDate())
         arrival_to = datetime.date(*self.arrival_to_date.date().getDate())
 
-        if not self.booking_worker.isRunning():
+        if not self.is_any_worker_running_now():
             self.booking_worker.set_dates(arrival_from, arrival_to)
             self.booking_worker.start()
 
-    # def start_expense_worker(self):
-    #     if not self.booking_worker.isRunning():
-    #         self.booking_worker.start()
+    def start_expense_worker(self):
+        if not self.is_any_worker_running_now():
+            self.expense_worker.start()
+
+    def is_any_worker_running_now(self):
+        return self.booking_worker.isRunning() or self.expense_worker.isRunning()
 
 
 def main():

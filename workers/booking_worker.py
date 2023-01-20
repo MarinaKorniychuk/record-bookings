@@ -6,7 +6,7 @@ from utils.process_bookings_data import process_bookings_data
 
 
 class BookingWorker(QThread):
-    """Thread to execute bookings recording."""
+    """Thread to execute recording of bookings to Google spreadsheets."""
     log = pyqtSignal(str)
 
     def __init__(self, parent=None):
