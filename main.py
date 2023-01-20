@@ -41,8 +41,8 @@ class BookingsWindow(QWidget):
         self.booking_worker = BookingWorker(self)
         # self.expense_worker = ExpenseWorker(self)
 
-        self.btnStartWorker = QPushButton('Заполнить таблицы бронированиями')
-        self.btnStartWorker.clicked.connect(self.start_booking_worker)
+        self.btnStartBookingWorker = QPushButton('Заполнить приходы')
+        self.btnStartBookingWorker.clicked.connect(self.start_booking_worker)
 
         self.logTextBox = QTextEditLogger(self)
         self.configure_app_logger()
@@ -56,9 +56,11 @@ class BookingsWindow(QWidget):
         self.setWindowTitle("Bookings")
 
     def set_app_layout(self):
-        self.formLayout.addRow(QLabel('Выбор периода заезда: с'), self.arrival_from_date)
-        self.formLayout.addRow(QLabel('по'), self.arrival_to_date)
-        self.formLayout.addRow(self.btnStartWorker)
+        self.formLayout.addRow(QLabel('Выберите период для получения бронирований с Bnova'))
+        self.formLayout.addRow(QLabel('Дата заезда: '), self.arrival_from_date)
+        self.formLayout.addRow(QLabel('по '), self.arrival_to_date)
+        self.formLayout.addRow(self.btnStartBookingWorker)
+
         self.formLayout.addRow(self.logTextBox.widget)
 
     def configure_app_logger(self):
