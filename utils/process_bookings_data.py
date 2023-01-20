@@ -10,11 +10,11 @@ from utils.date_helper import calculate_amount_of_days
 
 def calculate_profit_amount(row):
     """Maps source (источник бронирования) with commission value and calculated final profit amount"""
-    return math.floor(float(row.total_amount) * (1 - COMMISSION_MAP[row.source]))
+    return math.floor(float(row['total_amount']) * (1 - COMMISSION_MAP[row['source']]))
 
 
 def calculate_daily_amount(row):
-    return math.floor(float(row.final_amount) / row.days)
+    return math.floor(float(row['final_amount']) / row['days'])
 
 
 def get_dataframe_from_raw_data(raw_data):
@@ -26,9 +26,9 @@ def get_dataframe_from_raw_data(raw_data):
     column_names = ['source', 'arrival_date', 'leaving_date', 'total_amount', 'category']
     df = df.set_axis(column_names, axis=1, copy=False)
 
-    df.loc[df.source == '356', "source"] = 'Ostrovok'
-    df.loc[df.source == '14', "source"] = 'Sutochno'
-    df.loc[df.source == '0', "source"] = 'Прямой'
+    df.loc[df["source"] == '356', "source"] = 'Ostrovok'
+    df.loc[df["source"] == '14', "source"] = 'Sutochno'
+    df.loc[df["source"] == '0', "source"] = 'Прямой'
 
     return df
 
@@ -41,7 +41,7 @@ def process_bookings_data(raw_data):
     bookings_df = get_dataframe_from_raw_data(raw_data)
 
     bookings_df['final_amount'] = bookings_df.apply(lambda row: calculate_profit_amount(row), axis=1)
-    bookings_df['days'] = bookings_df.apply(lambda row: calculate_amount_of_days(row.arrival_date, row.leaving_date), axis=1)
+    bookings_df['days'] = bookings_df.apply(lambda row: calculate_amount_of_days(row['arrival_date'], row['leaving_date']), axis=1)
     bookings_df['daily_amount'] = bookings_df.apply(lambda row: calculate_daily_amount(row), axis=1)
 
     data = {
