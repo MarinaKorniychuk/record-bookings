@@ -34,8 +34,8 @@ def get_cell_address_by_date(date, record):
     example: for `date` 2022.12.28 and `record.category` 'СтудСад'
              return: (AD55, AD56)
     """
-    line_1_number = APARTMENTS_LINES_MAPPING[record['category']][0]
-    line_2_number = APARTMENTS_LINES_MAPPING[record['category']][1]
+    line_1_number = APARTMENTS_LINES_MAPPING[record.category][0]
+    line_2_number = APARTMENTS_LINES_MAPPING[record.category][1]
     cell_1 = DAYS_TO_COLUMNS_MAPPING[date.day] + line_1_number
     cell_2 = DAYS_TO_COLUMNS_MAPPING[date.day] + line_2_number
     return cell_1, cell_2

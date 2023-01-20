@@ -25,8 +25,8 @@ def record_profits_to_spreadsheet(spreadsheet, records, skipped):
         try:
             start_time = time.time()
 
-            start_date = get_date(record['arrival_date'])
-            end_date = get_date(record['leaving_date']) - timedelta(days=1)  # date of last staying day
+            start_date = get_date(record.arrival_date)
+            end_date = get_date(record.leaving_date) - timedelta(days=1)  # date of last staying day
 
             # iterate over every month of booking record
             # example: for record with dates `2022.12.28` - `2023.02.04` would iterate over the following values:
@@ -70,20 +70,20 @@ def record_profits_to_spreadsheet(spreadsheet, records, skipped):
 
                 _, end_cell = get_cell_address_by_date(end_range_date, record)
 
-                price_values = [[record['daily_amount']] * ((end_range_date - start_range_date).days + 1)]
+                price_values = [[record.daily_amount] * ((end_range_date - start_range_date).days + 1)]
                 update_range_with_values(start_cell, end_cell, worksheets[worksheet_name], price_values, border_values)
 
             # find and fill final_amount cell with value
             final_amount_cell_address, _ = get_cell_address_by_date(start_date, record)
             update_cell_with_value(
-                final_amount_cell_address, record['final_amount'],
+                final_amount_cell_address, record.final_amount,
                 worksheets[get_worksheet_name_by_month(start_date)]
             )
 
             logger.info(
-                f'{record["source"]}: {record["category"]} [{start_date} - {get_date(record["leaving_date"])}] '
-                f'profit: {record["final_amount"]} ({record["days"]} day(s) for {record["daily_amount"]}) '
-                f'({format(time.time() - start_time, ".2f")}s).\n'
+                f'{record.source}: {record.category} [{start_date} - {get_date(record.leaving_date)}] '
+                f'приход: {record.final_amount} ({record.daily_amount} в день) '
+                # f'({format(time.time() - start_time, ".2f")}s).\n'
             )
 
             time.sleep(2)
