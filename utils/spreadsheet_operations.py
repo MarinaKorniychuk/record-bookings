@@ -74,4 +74,4 @@ def update_range_with_values(start, end, worksheet, values, update_borders):
 def update_cell_with_value(address, value, worksheet):
     """Call Google API to update specified cell value"""
     final_amount_cell = Cell(address, worksheet=worksheet)
-    final_amount_cell.set_value(math.floor(value))
+    final_amount_cell.set_value(value)

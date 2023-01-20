@@ -10,7 +10,7 @@ from utils.date_helper import calculate_amount_of_days
 
 def calculate_profit_amount(row):
     """Maps source (источник бронирования) with commission value and calculated final profit amount"""
-    return float(row['total_amount']) * (1 - COMMISSION_MAP[row['source']])
+    return math.floor(float(row['total_amount']) * (1 - COMMISSION_MAP[row['source']]))
 
 
 def calculate_daily_amount(row):
