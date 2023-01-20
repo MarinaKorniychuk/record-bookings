@@ -2,8 +2,10 @@ import datetime
 import logging
 import sys
 
-from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtWidgets import (QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit)
+from PyQt6 import QtCore
+from PyQt6.QtWidgets import (
+    QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit, QMessageBox, QDateEdit
+)
 
 from workers.booking_worker import BookingWorker
 from workers.expense_worker import ExpenseWorker
@@ -34,9 +36,9 @@ class BookingsWindow(QWidget):
 
         layout = QVBoxLayout()
 
-        self.arrival_from_date = QtWidgets.QDateEdit(calendarPopup=True)
+        self.arrival_from_date = QDateEdit(calendarPopup=True)
         self.arrival_from_date.setDateTime(QtCore.QDateTime.currentDateTime())
-        self.arrival_to_date = QtWidgets.QDateEdit(calendarPopup=True)
+        self.arrival_to_date = QDateEdit(calendarPopup=True)
         self.arrival_to_date.setDateTime(QtCore.QDateTime.currentDateTime())
 
         self.booking_worker = BookingWorker(self)
@@ -88,6 +90,24 @@ class BookingsWindow(QWidget):
 
     def is_any_worker_running_now(self):
         return self.booking_worker.isRunning() or self.expense_worker.isRunning()
+
+    def closeEvent(self, event):
+        result = QMessageBox.question(
+            self,
+            "Confirm Exit...",
+            "Are you sure you want to exit ?",
+            QMessageBox.StandardButton.No | QMessageBox.StandardButton.Yes
+        )
+
+        if result == QMessageBox.StandardButton.Yes:
+            if self.booking_worker.isRunning():
+                self.booking_worker.terminate()
+                self.booking_worker.wait()
+            if self.expense_worker.isRunning():
+                self.expense_worker.terminate()
+                self.expense_worker.wait()
+        else:
+            event.ignore()
 
 
 def main():
