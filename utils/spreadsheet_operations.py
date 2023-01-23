@@ -1,5 +1,4 @@
 import logging
-import math
 
 import pygsheets
 
@@ -7,7 +6,6 @@ from pygsheets.datarange import DataRange
 from pygsheets.cell import Cell
 
 from constants import TEMPLATE_WORKSHEETS
-from data.apartments import APARTMENTS_LINES_MAPPING
 from data.days import DAYS_TO_COLUMNS_MAPPING
 from data.months import MONTHS_TO_NAME_MAPPING
 
@@ -26,18 +24,15 @@ def get_worksheet_name_by_month(date):
 
 def get_cell_address_by_date(date, record):
     """Return tuple of two cell addresses for a provided date
-    by mapping `record.category` to according line numbers
-               `date.day` to according column
+    by mapping `date.day` to according column and adding line numbers from the record to it
 
     First cell is from total price line, second is a daily price line
 
     example: for `date` 2022.12.28 and `record.category` 'СтудСад'
              return: (AD55, AD56)
     """
-    line_1_number = APARTMENTS_LINES_MAPPING[record['category']][0]
-    line_2_number = APARTMENTS_LINES_MAPPING[record['category']][1]
-    cell_1 = DAYS_TO_COLUMNS_MAPPING[date.day] + line_1_number
-    cell_2 = DAYS_TO_COLUMNS_MAPPING[date.day] + line_2_number
+    cell_1 = DAYS_TO_COLUMNS_MAPPING[date.day] + str(record['line1'])
+    cell_2 = DAYS_TO_COLUMNS_MAPPING[date.day] + str(record['line2'])
     return cell_1, cell_2
 
 

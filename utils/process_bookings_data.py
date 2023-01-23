@@ -2,9 +2,8 @@ import math
 
 import pandas as pd
 
-from data.apartments import SEREBRYANICHESKIY_APARTMENTS, RADIK_APARTMENTS, DINARA_APARTMENTS
-from constants import BNOVA_SHEET_NAME, COMMISSION_MAP, RADIK_SPREADSHEET_ID, DINARA_SPREADSHEET_ID, \
-    SEREBRYANICHESKIY_SPREADSHEET_ID
+from constants import COMMISSION_MAP, RADIK_SPREADSHEET_ID, DINARA_SPREADSHEET_ID, \
+    SEREBRYANICHESKIY_SPREADSHEET_ID, SEREBRYANICHESKIY, DINARA, RADIK
 from utils.date_helper import calculate_amount_of_days
 
 
@@ -33,8 +32,9 @@ def get_dataframe_from_raw_data(raw_data):
     return df
 
 
-def process_bookings_data(raw_data):
+def process_bookings_data(raw_data, config):
     """Adds final_amount, days and daily_amount columns to records dataset
+    Merge with config dataframe to add target spreadsheet and cell addresses to the records
     Split all data in three datasets based on spreadsheet they belong to
     Return dict where key is Google spreadsheet id and value id dataset with booking records."""
 
@@ -44,10 +44,13 @@ def process_bookings_data(raw_data):
     bookings_df['days'] = bookings_df.apply(lambda row: calculate_amount_of_days(row['arrival_date'], row['leaving_date']), axis=1)
     bookings_df['daily_amount'] = bookings_df.apply(lambda row: calculate_daily_amount(row), axis=1)
 
+    cols = ['category']
+    bookings_df = bookings_df.join(config.set_index(cols), on=cols)
+
     data = {
-        SEREBRYANICHESKIY_SPREADSHEET_ID: bookings_df.query("category in @SEREBRYANICHESKIY_APARTMENTS"),
-        DINARA_SPREADSHEET_ID: bookings_df.query("category in @DINARA_APARTMENTS"),
-        RADIK_SPREADSHEET_ID: bookings_df.query("category in @RADIK_APARTMENTS"),
+        SEREBRYANICHESKIY_SPREADSHEET_ID: bookings_df.query("spreadsheet == @SEREBRYANICHESKIY"),
+        DINARA_SPREADSHEET_ID: bookings_df.query("spreadsheet == @DINARA"),
+        RADIK_SPREADSHEET_ID: bookings_df.query("spreadsheet == @RADIK"),
     }
 
     return data

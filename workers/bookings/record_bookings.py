@@ -97,11 +97,8 @@ def record_profits_to_spreadsheet(spreadsheet, records, skipped):
     logger.info(f'{spreadsheet.title} IS DONE\n')
 
 
-def update_google_spreadsheets(data):
+def update_google_spreadsheets(data, gc):
     """Transfer records from dataset to Google spreadsheets"""
-    gc = pygsheets.authorize(CLIENT_SECRET_PATH, http=make_custom_http())
-
-    logger.info('Google API client: authorized.')
     logger.info(f'Started recording data at {datetime.datetime.now().time()}\n')
 
     skipped = []
