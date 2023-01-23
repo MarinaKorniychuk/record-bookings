@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QThread, pyqtSignal
 
-from record_expenses import update_google_spreadsheets
+from workers.exprenses.record_expenses import update_google_spreadsheets
 
 
 class ExpenseWorker(QThread):

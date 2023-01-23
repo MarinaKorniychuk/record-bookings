@@ -1,8 +1,8 @@
 from PyQt6.QtCore import QThread, pyqtSignal
 
 from clients.bnova_client import BnovaClient
-from record_bookings import update_google_spreadsheets
 from utils.process_bookings_data import process_bookings_data
+from workers.bookings.record_bookings import update_google_spreadsheets
 
 
 class BookingWorker(QThread):

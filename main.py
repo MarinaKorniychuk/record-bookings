@@ -7,8 +7,8 @@ from PyQt6.QtWidgets import (
     QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit, QMessageBox, QDateEdit
 )
 
-from workers.booking_worker import BookingWorker
-from workers.expense_worker import ExpenseWorker
+from workers.bookings.worker import BookingWorker
+from workers.exprenses.worker import ExpenseWorker
 
 logger = logging.getLogger('record.bookings')
 logging.basicConfig()
