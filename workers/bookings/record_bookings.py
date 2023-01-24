@@ -9,9 +9,7 @@ import logging
 import pygsheets
 from dateutil import rrule
 
-from constants import CLIENT_SECRET_PATH
 from utils.date_helper import get_date
-from clients.http_client import make_custom_http
 from utils.spreadsheet_operations import get_worksheet_name_by_month, open_or_create_worksheet, \
     get_cell_address_by_date, update_range_with_values, update_cell_with_value
 

@@ -1,15 +1,36 @@
-def update_google_spreadsheets(expenses_data):
+import logging
+from datetime import datetime
+
+import httplib2
+import pygsheets
+
+logger = logging.getLogger('record.bookings')
+
+
+def record_expenses_to_spreadsheet(spreadsheet, records, skipped):
     pass
 
-# gc = pygsheets.authorize('secrets/desktop_client_secret.json')
-# sh = gc.open('Расходы (все объекты) COPY')
-# wk = sg.worksheet('title', 'Sheet1')
-# wk.get_as_df()
+def update_google_spreadsheets(data, gc):
+    """Transfer records from dataset to Google spreadsheets"""
+    logger.info(f'Started recording data at {datetime.now().time()}\n')
 
-# d = wk.get_as_df(has_header=False, start='A3', empty_value=None)
-# # column_names = ['Отметка времени', 'Имя	Объекты (таблица)', 'Категория', 'Объект (Аренда)', 'Объект (ЖКХ/Интернет)', 'Сотрудник', 'Комментарий', 'Сумма', 'Загрузка чека', 'Внесено в таблицу']
-# column_names = ['datetime', 'name', 'sheet', 'category', 'apartment/rent', 'apartment/internet', 'employee', 'comment', 'amount', 'receipt', 'recorded']
-# d = d.set_axis(column_names, axis=1, copy=False)
+    skipped = []
+    # recording is done for each spreadsheet one by one as they are specified in data
+    for spreadsheet_id, records in data.items():
+        try:
+            # open spreadsheet by its id (ids stored in constants.py file)
+            spreadsheet = gc.open_by_key(spreadsheet_id)
+            record_expenses_to_spreadsheet(spreadsheet, records, skipped)
+        except pygsheets.SpreadsheetNotFound:
+            logger.warning(f'{spreadsheet_id} spreadsheet not found, skip.')
+            pass
+        except httplib2.HttpLib2Error as error:
+            logger.error(f'Could not open {spreadsheet_id} spreadsheet: {error}')
+
+    logger.info(f'Finished recording data at {datetime.now().time()}\n')
+
+    logger.info(f'SKIPPED RECORDS: \n{skipped}')
+
 
 # d[d.recorded.notnull()]
 # d['recorded'] = d['recorded'].fillna(0)
