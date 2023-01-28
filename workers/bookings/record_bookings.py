@@ -101,16 +101,19 @@ def update_google_spreadsheets(data, gc):
 
     skipped = []
     # recording is done for each spreadsheet one by one as they are specified in data
-    for spreadsheet_id, records in data.items():
+    for spreadsheet_title, records in data.items():
         try:
             # open spreadsheet by its id (ids stored in constants.py file)
-            spreadsheet = gc.open_by_key(spreadsheet_id)
+            spreadsheet = gc.open(spreadsheet_title)
             record_profits_to_spreadsheet(spreadsheet, records, skipped)
         except pygsheets.SpreadsheetNotFound:
-            logger.warning(f'{spreadsheet_id} spreadsheet not found, skip.')
+            logger.warning(f'{spreadsheet_title} spreadsheet not found, skip.')
+            skipped.append(records)
             pass
         except httplib2.HttpLib2Error as error:
-            logger.error(f'Could not open {spreadsheet_id} spreadsheet: {error}')
+            logger.error(f'Could not open {spreadsheet_title} spreadsheet: {error}')
+            skipped.append(records)
+            pass
 
     logger.info(f'Finished recording data at {datetime.datetime.now().time()}\n')
 

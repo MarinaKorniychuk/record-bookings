@@ -1,10 +1,9 @@
-import pygsheets
 from PyQt6.QtCore import QThread, pyqtSignal
 
 from clients.bnova_client import BnovaClient
 from clients.google_client import GoogleClient
 from utils.process_bookings_data import process_bookings_data
-from workers.bookings.configuration import get_config_spreadsheet
+from utils.configuration import get_bookings_config, get_spreadsheets_config
 from workers.bookings.record_bookings import update_google_spreadsheets
 
 
@@ -26,8 +25,11 @@ class BookingWorker(QThread):
 
     def run(self):
         gc = GoogleClient().gc
-        config = get_config_spreadsheet(gc)
+
+        spreadsheets_config = get_spreadsheets_config(gc)
+        bookings_config = get_bookings_config(gc)
+
         raw_data = self.bnova_client.get_bookings_data(self.arrival_from, self.arrival_to)
-        bookings_data = process_bookings_data(raw_data, config)
+        bookings_data = process_bookings_data(raw_data, spreadsheets_config, bookings_config)
 
         update_google_spreadsheets(bookings_data, gc)
