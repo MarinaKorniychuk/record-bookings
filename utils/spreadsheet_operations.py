@@ -6,7 +6,7 @@ import pygsheets
 from pygsheets.datarange import DataRange
 from pygsheets.cell import Cell
 
-from constants import TEMPLATE_WORKSHEETS
+from constants import TEMPLATE_WORKSHEET
 from data.days import DAYS_TO_COLUMNS_MAPPING
 from data.months import MONTHS_TO_NAME_MAPPING
 
@@ -58,7 +58,7 @@ def open_or_create_worksheet(worksheet_name, spreadsheet, worksheets):
         worksheet = spreadsheet.worksheet('title', worksheet_name)
     except pygsheets.WorksheetNotFound:
         # open template and copy it to create a new worksheet
-        template = spreadsheet.worksheet('title', TEMPLATE_WORKSHEETS[spreadsheet.id])
+        template = spreadsheet.worksheet('title', TEMPLATE_WORKSHEET)
         worksheet = spreadsheet.add_worksheet(worksheet_name, src_worksheet=template)
 
         logger.info(f'NEW WORKSHEET {worksheet_name} IS CREATED IN {spreadsheet.title}.\n')

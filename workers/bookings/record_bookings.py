@@ -109,16 +109,10 @@ def update_google_spreadsheets(data, gc):
         except pygsheets.SpreadsheetNotFound:
             logger.warning(f'{spreadsheet_title} spreadsheet not found, skip.')
             skipped.append(records)
-            pass
         except httplib2.HttpLib2Error as error:
             logger.error(f'Could not open {spreadsheet_title} spreadsheet: {error}')
             skipped.append(records)
-            pass
 
     logger.info(f'Finished recording data at {datetime.datetime.now().time()}\n')
 
     logger.info(f'SKIPPED RECORDS: \n{skipped}')
-
-# 28.12.2022 - 06.01.2023 /Users/marina.korniychuk/Downloads/19057_bookings_20230106193908_1.xlsx
-# 29.11.2022 - 06.01.2023 /Users/marina.korniychuk/Downloads/19057_bookings_20230107002759_1.xlsx
-# 14.12.2022 - 27.12.2022 /Users/marina.korniychuk/Downloads/19057_bookings_20230107031414_1.xlsx
