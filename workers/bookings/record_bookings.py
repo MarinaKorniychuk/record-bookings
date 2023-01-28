@@ -11,7 +11,7 @@ from dateutil import rrule
 
 from utils.date_helper import get_date
 from utils.spreadsheet_operations import get_worksheet_name_by_month, open_or_create_worksheet, \
-    get_cell_address_by_date, update_range_with_values, update_cell_with_value
+    get_profit_cell_address_by_date, update_range_with_values, update_cell_with_value
 
 logger = logging.getLogger('record.bookings')
 
@@ -54,7 +54,7 @@ def record_profits_to_spreadsheet(spreadsheet, records, skipped):
                     start_range_date = datetime.date(worksheet_year, worksheet_month, 1)
                     border_values[3] = 0
 
-                _, start_cell = get_cell_address_by_date(start_range_date, record)
+                _, start_cell = get_profit_cell_address_by_date(start_range_date, record)
 
                 if end_date.month == worksheet_month:
                     end_range_date = end_date
@@ -66,13 +66,13 @@ def record_profits_to_spreadsheet(spreadsheet, records, skipped):
                     )
                     border_values[1] = 0
 
-                _, end_cell = get_cell_address_by_date(end_range_date, record)
+                _, end_cell = get_profit_cell_address_by_date(end_range_date, record)
 
                 price_values = [[record['daily_amount']] * ((end_range_date - start_range_date).days + 1)]
                 update_range_with_values(start_cell, end_cell, worksheets[worksheet_name], price_values, border_values)
 
             # find and fill final_amount cell with value
-            final_amount_cell_address, _ = get_cell_address_by_date(start_date, record)
+            final_amount_cell_address, _ = get_profit_cell_address_by_date(start_date, record)
             update_cell_with_value(
                 final_amount_cell_address, record['final_amount'],
                 worksheets[get_worksheet_name_by_month(start_date)]

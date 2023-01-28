@@ -1,4 +1,5 @@
 import logging
+import math
 
 import pygsheets
 
@@ -22,7 +23,7 @@ def get_worksheet_name_by_month(date):
     return worksheet
 
 
-def get_cell_address_by_date(date, record):
+def get_profit_cell_address_by_date(date, record):
     """Return tuple of two cell addresses for a provided date
     by mapping `date.day` to according column and adding line numbers from the record to it
 
@@ -34,6 +35,14 @@ def get_cell_address_by_date(date, record):
     cell_1 = DAYS_TO_COLUMNS_MAPPING[date.day] + str(record['line1'])
     cell_2 = DAYS_TO_COLUMNS_MAPPING[date.day] + str(record['line2'])
     return cell_1, cell_2
+
+
+def get_expense_cell_address_by_date(date, record):
+    """Return expense cell address for a provided date
+    by mapping `date.day` to according column and adding line numbers from the record to it
+    """
+    cell = DAYS_TO_COLUMNS_MAPPING[date.day] + str(record['line'])
+    return cell
 
 
 def open_or_create_worksheet(worksheet_name, spreadsheet, worksheets):
@@ -70,3 +79,19 @@ def update_cell_with_value(address, value, worksheet):
     """Call Google API to update specified cell value"""
     final_amount_cell = Cell(address, worksheet=worksheet)
     final_amount_cell.set_value(value)
+
+
+def update_expense_cell_value(address, amount, note, worksheet):
+    """Call Google API to update specified cell value
+    If expense cell already has recorded expense, summarize amounts
+    And add note to the cell with expense comment
+    """
+    exp_cell = Cell(address, worksheet=worksheet)
+
+    current_value = exp_cell.value
+    if current_value:
+        exp_cell.set_value(math.floor(float(current_value) + float(amount)))
+        exp_cell.note = f'{exp_cell.note}\n\n{note} ({amount})'
+    else:
+        exp_cell.set_value(amount)
+        exp_cell.note = note
