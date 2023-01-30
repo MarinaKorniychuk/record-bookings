@@ -1,12 +1,12 @@
 import datetime
 import logging
+import os
 import sys
 
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import (
     QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit, QMessageBox, QDateEdit
 )
-
 from workers.bookings.worker import BookingWorker
 from workers.exprenses.worker import ExpenseWorker
 
@@ -50,6 +50,9 @@ class BookingsWindow(QWidget):
         self.btnStartExpenseWorker = QPushButton('Заполнить расходы')
         self.btnStartExpenseWorker.clicked.connect(self.start_expense_worker)
 
+        # self.btnGetGoogleToken = QPushButton('Получить новый токен для Google API', )
+        # self.btnGetGoogleToken.clicked.connect(self.refresh_google_token)
+
         self.logTextBox = QTextEditLogger(self)
         self.configure_app_logger()
 
@@ -70,6 +73,7 @@ class BookingsWindow(QWidget):
         self.formLayout.addRow(self.btnStartExpenseWorker)
 
         self.formLayout.addRow(self.logTextBox.widget)
+        # self.formLayout.addRow(self.btnGetGoogleToken)
 
     def configure_app_logger(self):
         self.logTextBox.setFormatter(logging.Formatter('%(message)s'))
@@ -90,6 +94,9 @@ class BookingsWindow(QWidget):
 
     def is_any_worker_running_now(self):
         return self.booking_worker.isRunning() or self.expense_worker.isRunning()
+
+    def refresh_google_token(self):
+        os.remove('sheets.googleapis.com-python.json')
 
     def closeEvent(self, event):
         result = QMessageBox.question(

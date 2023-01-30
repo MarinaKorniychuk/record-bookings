@@ -86,12 +86,12 @@ def update_expense_cell_value(address, amount, note, worksheet):
     If expense cell already has recorded expense, summarize amounts
     And add note to the cell with expense comment
     """
-    exp_cell = Cell(address, worksheet=worksheet)
+    exp_cell = worksheet.cell(address)
 
-    current_value = exp_cell.value
+    current_value = worksheet.get_value(address)
     if current_value:
         exp_cell.set_value(math.floor(float(current_value) + float(amount)))
         exp_cell.note = f'{exp_cell.note}\n\n{note} ({amount})'
     else:
         exp_cell.set_value(amount)
-        exp_cell.note = note
+        exp_cell.note = f'{note} ({amount})'

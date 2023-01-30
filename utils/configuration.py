@@ -30,9 +30,9 @@ def get_expenses_config(gc):
     spreadsheet = gc.open(CONFIG_SPREADSHEET)
 
     expenses_config_worksheet = spreadsheet.worksheet('title', EXPENSES_CONFIG_WORKSHEET)
-    column_names = ['category', 'spreadsheet', 'line']
+    column_names = ['category', 'spreadsheet_id', 'line']
     expenses_config = expenses_config_worksheet.get_as_df(has_header=False, start='C7')
-    expenses_config = expenses_config_worksheet.set_axis(column_names, axis=1, copy=False)
+    expenses_config = expenses_config.set_axis(column_names, axis=1, copy=False)
 
     # drop empty lines
     expenses_config = expenses_config[expenses_config.category != '']
@@ -43,12 +43,21 @@ def get_form_responses_spreadsheet_data(gc):
     spreadsheet = gc.open(CONFIG_SPREADSHEET)
 
     expenses_config_worksheet = spreadsheet.worksheet('title', EXPENSES_CONFIG_WORKSHEET)
-    title_cell = Cell('D3', worksheet=expenses_config_worksheet)
-    sheet_cell = Cell('D4', worksheet=expenses_config_worksheet)
+
+    title = expenses_config_worksheet.get_value('D3')
+    sheet = expenses_config_worksheet.get_value('D4')
 
     spreadsheet_data = {
-        'title': title_cell.value,
-        'sheet': sheet_cell.value,
+        'title': title,
+        'sheet': sheet,
     }
 
     return spreadsheet_data
+
+def get_form_responses_worksheet(gc):
+    spreadsheet_data= get_form_responses_spreadsheet_data(gc)
+
+    spreadsheet = gc.open(spreadsheet_data['title'])
+    worksheet = spreadsheet.worksheet('title', spreadsheet_data['sheet'])
+
+    return worksheet

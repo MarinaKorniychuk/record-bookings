@@ -1,14 +1,14 @@
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread
 
 from clients.google_client import GoogleClient
-from utils.process_expensess_data import get_expenses_data, process_expenses_data
-from utils.configuration import get_expenses_config, get_spreadsheets_config, get_form_responses_spreadsheet_data
+from utils.process_expensess_data import get_processed_expenses_data
+from utils.configuration import get_expenses_config, get_spreadsheets_config
 from workers.exprenses.record_expenses import update_google_spreadsheets
 
 
 class ExpenseWorker(QThread):
     """Thread to execute recording of expenses to Google spreadsheets."""
-    log = pyqtSignal(str)
+    # log = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(ExpenseWorker, self).__init__(parent)
@@ -16,10 +16,12 @@ class ExpenseWorker(QThread):
     def run(self):
         gc = GoogleClient().gc
 
+        if not gc:
+            return
+
         spreadsheets_config = get_spreadsheets_config(gc)
         expenses_config = get_expenses_config(gc)
-        form_responses_spreadsheet_data = get_form_responses_spreadsheet_data(gc)
 
-        dataframe = get_expenses_data(form_responses_spreadsheet_data, gc)
-        # expenses_data = process_expenses_data(dataframe, spreadsheets_config, expenses_config)
-        # update_google_spreadsheets(expenses_data)
+        expenses_data = get_processed_expenses_data(spreadsheets_config, expenses_config, gc)
+
+        update_google_spreadsheets(expenses_data, gc)

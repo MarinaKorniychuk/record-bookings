@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread
 
 from clients.bnova_client import BnovaClient
 from clients.google_client import GoogleClient
@@ -9,7 +9,7 @@ from workers.bookings.record_bookings import update_google_spreadsheets
 
 class BookingWorker(QThread):
     """Thread to execute recording of bookings to Google spreadsheets."""
-    log = pyqtSignal(str)
+    # log = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(BookingWorker, self).__init__(parent)
@@ -25,6 +25,9 @@ class BookingWorker(QThread):
 
     def run(self):
         gc = GoogleClient().gc
+
+        if not gc:
+            return
 
         spreadsheets_config = get_spreadsheets_config(gc)
         bookings_config = get_bookings_config(gc)
