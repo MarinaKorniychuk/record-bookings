@@ -1,6 +1,5 @@
 import datetime
 import logging
-import os
 import sys
 
 from PyQt6 import QtCore
@@ -13,8 +12,6 @@ from workers.exprenses.worker import ExpenseWorker
 logger = logging.getLogger('record.bookings')
 logging.basicConfig()
 logger.setLevel(logging.DEBUG)
-# consoleHandler = logging.StreamHandler()
-# logger.addHandler(consoleHandler)
 
 
 class QTextEditLogger(logging.Handler):
@@ -50,9 +47,6 @@ class BookingsWindow(QWidget):
         self.btnStartExpenseWorker = QPushButton('Заполнить расходы')
         self.btnStartExpenseWorker.clicked.connect(self.start_expense_worker)
 
-        # self.btnGetGoogleToken = QPushButton('Получить новый токен для Google API', )
-        # self.btnGetGoogleToken.clicked.connect(self.refresh_google_token)
-
         self.logTextBox = QTextEditLogger(self)
         self.configure_app_logger()
 
@@ -73,12 +67,11 @@ class BookingsWindow(QWidget):
         self.formLayout.addRow(self.btnStartExpenseWorker)
 
         self.formLayout.addRow(self.logTextBox.widget)
-        # self.formLayout.addRow(self.btnGetGoogleToken)
 
     def configure_app_logger(self):
         self.logTextBox.setFormatter(logging.Formatter('%(message)s'))
         logger.addHandler(self.logTextBox)
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
 
     def start_booking_worker(self):
         arrival_from = datetime.date(*self.arrival_from_date.date().getDate())
@@ -87,16 +80,19 @@ class BookingsWindow(QWidget):
         if not self.is_any_worker_running_now():
             self.booking_worker.set_dates(arrival_from, arrival_to)
             self.booking_worker.start()
+            self.disable_buttons()
 
     def start_expense_worker(self):
         if not self.is_any_worker_running_now():
             self.expense_worker.start()
+            self.disable_buttons()
+
+    def disable_buttons(self):
+        self.btnStartBookingWorker.setEnabled(False)
+        self.btnStartExpenseWorker.setEnabled(False)
 
     def is_any_worker_running_now(self):
         return self.booking_worker.isRunning() or self.expense_worker.isRunning()
-
-    def refresh_google_token(self):
-        os.remove('sheets.googleapis.com-python.json')
 
     def closeEvent(self, event):
         result = QMessageBox.question(

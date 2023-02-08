@@ -1,7 +1,8 @@
-import pandas
+import logging
 
 from utils.configuration import get_form_responses_worksheet
 
+logger = logging.getLogger('record.bookings')
 
 def get_expenses_data(gc):
     worksheet= get_form_responses_worksheet(gc)
@@ -28,6 +29,8 @@ def get_processed_expenses_data(spreadsheets_config, expenses_config, gc):
 
     expense_df['recorded'] = expense_df['recorded'].fillna(0)
     expense_df = expense_df[expense_df.recorded.isin([0.0])]
+
+    logger.info(f'Total amount of expenses for recording: {len(expense_df)}\n')
 
     data = dict()
     for _, record in spreadsheets_config.iterrows():

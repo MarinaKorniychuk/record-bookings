@@ -97,7 +97,7 @@ def record_profits_to_spreadsheet(spreadsheet, records, skipped):
 
 def update_google_spreadsheets(data, gc):
     """Transfer records from dataset to Google spreadsheets"""
-    logger.info(f'Started recording data at {datetime.datetime.now().time()}\n')
+    logger.debug(f'Started recording data at {datetime.datetime.now().time()}\n')
 
     skipped = []
     # recording is done for each spreadsheet one by one as they are specified in data
@@ -113,6 +113,6 @@ def update_google_spreadsheets(data, gc):
             logger.error(f'Could not open {spreadsheet_title} spreadsheet: {error}')
             skipped.append(records)
 
-    logger.info(f'Finished recording data at {datetime.datetime.now().time()}\n')
+    logger.debug(f'Finished recording data at {datetime.datetime.now().time()}\n')
 
     logger.info(f'SKIPPED RECORDS: \n{skipped}')

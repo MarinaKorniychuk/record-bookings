@@ -46,7 +46,7 @@ def record_expenses_to_spreadsheet(spreadsheet, records, response_worksheet, ski
 
 def update_google_spreadsheets(data, gc):
     """Transfer records from dataset to Google spreadsheets"""
-    logger.info(f'Started recording data at {datetime.now().time()}\n')
+    logger.debug(f'Started recording data at {datetime.now().time()}\n')
 
     expenses_worksheet = get_form_responses_worksheet(gc)
 
@@ -65,7 +65,7 @@ def update_google_spreadsheets(data, gc):
             skipped.append(records)
 
 
-    logger.info(f'Finished recording data at {datetime.now().time()}\n')
+    logger.debug(f'Finished recording data at {datetime.now().time()}\n')
 
     logger.info(f'SKIPPED RECORDS: \n{skipped}')
 
