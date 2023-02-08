@@ -1,21 +1,15 @@
-CLIENT_SECRET_PATH = 'secrets/desktop_client_secret.json'
+CLIENT_SECRET_PATH = 'secrets/radik.json'
+SERVICE_ACCOUNT_SECRET_PATH = 'secrets/apartments_service_account.json'
 
-CONFIG_SPREADSHEET = 'record-bookings'
+CONFIG_SPREADSHEET = 'Подсчеты / Конфиг'
 
 BOOKINGS_CONFIG_WORKSHEET = 'Приходы'
 EXPENSES_CONFIG_WORKSHEET = 'Расходы'
 SPREADSHEET_CONFIG_WORKSHEET = 'Таблицы'
 
-RADIK = 'Основная'
-DINARA = 'Никитская'
-SEREBRYANICHESKIY = 'Серебрянический'
-
 TEMPLATE_WORKSHEET = 'Бланк'
 
-EXPENSES_SPREADSHEET_ID = '122tDi9ZilIuyi_mPe5yIVBggfkQdS9h0I1WtnskHlzU'
-
 # bnova spreadsheet constants
-
 DIRECT = 'Прямой'
 SUTOCHNO = 'Sutochno'
 OSTROVOK = 'Ostrovok'
