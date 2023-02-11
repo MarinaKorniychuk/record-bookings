@@ -15,7 +15,7 @@ SUTOCHNO = 'Sutochno'
 OSTROVOK = 'Ostrovok'
 
 COMMISSION_MAP = {
-    DIRECT: 0,
+    DIRECT: 0.1,
     SUTOCHNO: 0.25,
     OSTROVOK: 0.15,
 }
