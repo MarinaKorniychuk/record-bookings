@@ -3,10 +3,12 @@ import time
 from datetime import datetime
 
 import httplib2
-import pygsheets
+
+from pygsheets import RequestError, SpreadsheetNotFound, IncorrectCellLabel
 
 from utils.configuration import get_form_responses_worksheet
 from utils.date_helper import get_expense_date
+from utils.log_error import log_error
 from utils.spreadsheet_operations import get_worksheet_name_by_month, open_or_create_worksheet, \
     get_expense_cell_address_by_date, update_expense_cell_value, update_cell_with_value
 
@@ -36,9 +38,9 @@ def record_expenses_to_spreadsheet(spreadsheet, records, response_worksheet, ski
 
             time.sleep(2)
 
-        except httplib2.HttpLib2Error as error:
-            logger.error(f'Caught the following error: {error}')
 
+        except (httplib2.HttpLib2Error, RequestError, IncorrectCellLabel) as error:
+            log_error(error)
             skipped.append(record)
             continue
 
@@ -57,11 +59,8 @@ def update_google_spreadsheets(data, gc):
             # open spreadsheet by its id (ids stored in constants.py file)
             spreadsheet = gc.open(spreadsheet_title)
             record_expenses_to_spreadsheet(spreadsheet, records, expenses_worksheet, skipped)
-        except pygsheets.SpreadsheetNotFound:
-            logger.warning(f'{spreadsheet_title} spreadsheet not found, skip.')
-            skipped.append(records)
-        except httplib2.HttpLib2Error as error:
-            logger.error(f'Could not open {spreadsheet_title} spreadsheet: {error}')
+        except (SpreadsheetNotFound, RequestError, httplib2.HttpLib2Error) as error:
+            log_error(error)
             skipped.append(records)
 
 
@@ -69,12 +68,3 @@ def update_google_spreadsheets(data, gc):
 
     logger.info(f'SKIPPED RECORDS: \n{skipped}')
 
-
-# d[d.recorded.notnull()]
-# d['recorded'] = d['recorded'].fillna(0)
-# not_recordered = d[d.recorded.isin([0.0])]
-# d[d.recorded == 0.0]
-
-# int(an.value or 0) + 4
-# cell.note = note
-# empty note is None

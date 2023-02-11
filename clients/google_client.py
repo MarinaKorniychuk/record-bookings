@@ -2,6 +2,7 @@ import logging
 
 import pygsheets
 from google.auth.exceptions import RefreshError
+from pygsheets import AuthenticationError
 
 from clients.http_client import make_custom_http
 from constants import SERVICE_ACCOUNT_SECRET_PATH
@@ -17,7 +18,8 @@ class GoogleClient:
         try:
             self.gc = pygsheets.authorize(service_account_file=SERVICE_ACCOUNT_SECRET_PATH, http=make_custom_http())
             logger.info('Google API client: authorized.')
-        except RefreshError:
-            logger.info('Google API authorization failed. Token has been expired or revoked.')
+        except (RefreshError, AuthenticationError) as error:
+            logger.error('Google API authorization failed.')
+            logger.error(error)
             raise
 

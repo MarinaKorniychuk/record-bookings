@@ -27,6 +27,8 @@ def get_processed_expenses_data(spreadsheets_config, expenses_config, gc):
     expense_df['rec_line'] = expense_df.index + 2
     expense_df = expense_df.drop(columns=['cat1', 'com1', 'am1', 'ch1', 'cat2', 'com2', 'am2', 'ch2', 'cat3', 'com3', 'am3', 'ch3'])
 
+    expense_df = expense_df[expense_df.category != '']
+
     expense_df['recorded'] = expense_df['recorded'].fillna(0)
     expense_df = expense_df[expense_df.recorded.isin([0.0])]
 
@@ -39,7 +41,8 @@ def get_processed_expenses_data(spreadsheets_config, expenses_config, gc):
         expenses_sub_df.set_index('category')
         categories_set = expenses_config.query("spreadsheet_id == @spreadsheet_id")
 
-        data[record['spreadsheet_title']] = expenses_sub_df.join(categories_set.set_index('category'), on='category')
+        expenses_sub_df = expenses_sub_df.join(categories_set.set_index('category'), on='category')
+        data[record['spreadsheet_title']] = expenses_sub_df.dropna(subset=['category', 'spreadsheet', 'line'])
 
     return data
 

@@ -4,6 +4,7 @@ import pandas as pd
 
 from constants import COMMISSION_MAP
 from utils.date_helper import calculate_amount_of_days
+from utils.log_error import log_error
 
 
 def calculate_profit_amount(row):
@@ -46,11 +47,16 @@ def process_bookings_data(raw_data, spreadsheets_config, bookings_config):
     cols = ['category']
     bookings_df = bookings_df.join(bookings_config.set_index(cols), on=cols)
 
+    valid_bookings_df = bookings_df.dropna(subset=['category', 'spreadsheet', 'line1', 'line2'])
+    invalid = pd.concat([bookings_df, valid_bookings_df]).drop_duplicates(keep=False)
+    invalid = invalid[['category', 'arrival_date']]
+    log_error(f'Could not record the following bookings:\n\n{invalid}\n')
+
     data = dict()
 
     for _, record in spreadsheets_config.iterrows():
         spreadsheet_id = record['spreadsheet_id']
-        data[record['spreadsheet_title']] = bookings_df.query("spreadsheet == @spreadsheet_id")
+        data[record['spreadsheet_title']] = valid_bookings_df.query("spreadsheet == @spreadsheet_id")
 
     return data
 

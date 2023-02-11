@@ -1,15 +1,17 @@
 import calendar
 import datetime
+import logging
 import time
 
 from datetime import timedelta
-
-import httplib2
-import logging
-import pygsheets
 from dateutil import rrule
 
+import httplib2
+
+from pygsheets import SpreadsheetNotFound, RequestError, IncorrectCellLabel
+
 from utils.date_helper import get_date
+from utils.log_error import log_error
 from utils.spreadsheet_operations import get_worksheet_name_by_month, open_or_create_worksheet, \
     get_profit_cell_address_by_date, update_range_with_values, update_cell_with_value
 
@@ -86,9 +88,8 @@ def record_profits_to_spreadsheet(spreadsheet, records, skipped):
 
             time.sleep(2)
 
-        except httplib2.HttpLib2Error as error:
-            logger.error(f'Caught the following error: {error}')
-
+        except (httplib2.HttpLib2Error, RequestError, IncorrectCellLabel) as error:
+            log_error(error)
             skipped.append(record)
             continue
 
@@ -106,11 +107,8 @@ def update_google_spreadsheets(data, gc):
             # open spreadsheet by its id (ids stored in constants.py file)
             spreadsheet = gc.open(spreadsheet_title)
             record_profits_to_spreadsheet(spreadsheet, records, skipped)
-        except pygsheets.SpreadsheetNotFound:
-            logger.warning(f'{spreadsheet_title} spreadsheet not found, skip.')
-            skipped.append(records)
-        except httplib2.HttpLib2Error as error:
-            logger.error(f'Could not open {spreadsheet_title} spreadsheet: {error}')
+        except (SpreadsheetNotFound, RequestError, httplib2.HttpLib2Error) as error:
+            log_error(error)
             skipped.append(records)
 
     logger.debug(f'Finished recording data at {datetime.datetime.now().time()}\n')
