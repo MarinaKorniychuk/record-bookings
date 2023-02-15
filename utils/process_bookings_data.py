@@ -48,9 +48,11 @@ def process_bookings_data(raw_data, spreadsheets_config, bookings_config):
     bookings_df = bookings_df.join(bookings_config.set_index(cols), on=cols)
 
     valid_bookings_df = bookings_df.dropna(subset=['category', 'spreadsheet', 'line1', 'line2'])
+
     invalid = pd.concat([bookings_df, valid_bookings_df]).drop_duplicates(keep=False)
-    invalid = invalid[['category', 'arrival_date']]
-    log_error(f'Could not record the following bookings:\n\n{invalid}\n')
+    if len(invalid):
+        invalid = invalid[['category', 'arrival_date']]
+        log_error(f'Could not record the following bookings:\n\n{invalid}\n')
 
     data = dict()
 
