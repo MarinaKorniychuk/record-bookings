@@ -2,6 +2,9 @@ from constants import CONFIG_SPREADSHEET, BOOKINGS_CONFIG_WORKSHEET, SPREADSHEET
 
 
 def get_spreadsheets_config(gc):
+    """Get config from worksheet 'Таблицы' (spreadsheet 'Подсчеты / Конфиг')
+    Read dataframe from C4 cell
+    """
     spreadsheet = gc.open(CONFIG_SPREADSHEET)
 
     spreadsheet_config_worksheet = spreadsheet.worksheet('title', SPREADSHEET_CONFIG_WORKSHEET)
@@ -12,6 +15,9 @@ def get_spreadsheets_config(gc):
     return spreadsheets_config
 
 def get_bookings_config(gc):
+    """Get config from worksheet 'Приходы' (spreadsheet 'Подсчеты / Конфиг')
+    Read dataframe from C4 cell, remove empty lines
+    """
     spreadsheet = gc.open(CONFIG_SPREADSHEET)
 
     bookings_config_worksheet = spreadsheet.worksheet('title', BOOKINGS_CONFIG_WORKSHEET)
@@ -25,6 +31,9 @@ def get_bookings_config(gc):
     return bookings_config
 
 def get_expenses_config(gc):
+    """Get config from worksheet 'Расходы' (spreadsheet 'Подсчеты / Конфиг')
+    Read dataframe from C7 cell, remove empty lines
+    """
     spreadsheet = gc.open(CONFIG_SPREADSHEET)
 
     expenses_config_worksheet = spreadsheet.worksheet('title', EXPENSES_CONFIG_WORKSHEET)
@@ -38,6 +47,7 @@ def get_expenses_config(gc):
     return expenses_config
 
 def get_form_responses_spreadsheet_data(gc):
+    """Get names of expenses spreadsheet and worksheet from worksheet 'Расходы', cells D3, D4"""
     spreadsheet = gc.open(CONFIG_SPREADSHEET)
 
     expenses_config_worksheet = spreadsheet.worksheet('title', EXPENSES_CONFIG_WORKSHEET)
@@ -53,6 +63,7 @@ def get_form_responses_spreadsheet_data(gc):
     return spreadsheet_data
 
 def get_form_responses_worksheet(gc):
+    """Open and return worksheet with expenses (form responses)"""
     spreadsheet_data= get_form_responses_spreadsheet_data(gc)
 
     spreadsheet = gc.open(spreadsheet_data['title'])

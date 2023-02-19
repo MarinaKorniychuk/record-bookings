@@ -19,6 +19,7 @@ logger = logging.getLogger('record.bookings')
 
 
 class BnovaClient:
+    """Class to make calls to Bnova"""
     session = None
     auth_response = None
 
@@ -45,6 +46,10 @@ class BnovaClient:
         }
 
     def get_bookings_data(self, arrival_from, arrival_to):
+        """Retrieve bookings for specified period
+        Check response 'pages' value after first call and make following calls to retrieve remaining bookings
+        if necessary.
+        """
         self.authorize()
 
         logger.info(f'\nПолучение от Bnova данных о заездах с {arrival_from} по {arrival_to}')

@@ -23,6 +23,10 @@ logger = logging.getLogger('record.bookings')
 
 
 def record_profits_to_spreadsheet(spreadsheet, records, skipped):
+    """Here happens recording of bookings data to Google spreadsheet
+    Bookings are recorded one by one. Booking which booking period overlaps with more than one different months,
+    divided into parts and recorded one after another into different worksheets
+    """
     worksheets = {}  # dict to store opened worksheets for different months (worksheet's name is a key)
 
     for _, record in records.iterrows():
@@ -101,6 +105,7 @@ def record_profits_to_spreadsheet(spreadsheet, records, skipped):
 
 
 def update_google_spreadsheets(data, gc):
+    """For each spreadsheet in dataset call recording to Google spreadsheet"""
     logger.debug(f'Started recording data at {datetime.datetime.now().time()}\n')
 
     skipped = []
@@ -120,6 +125,10 @@ def update_google_spreadsheets(data, gc):
 
 
 def run(arrival_from, arrival_to):
+    """Create Google and Bnova client
+    Get all configurations, retrieve and process bookings from Bnova
+    Run updating Google spreadsheets function
+    """
     gc = GoogleClient().gc
     bc = BnovaClient()
 

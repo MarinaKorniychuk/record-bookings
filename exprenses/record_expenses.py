@@ -19,6 +19,11 @@ logger = logging.getLogger('record.bookings')
 
 
 def record_expenses_to_spreadsheet(spreadsheet, records, response_worksheet, skipped):
+    """Here happens recording of expenses data to Google spreadsheet
+    Expenses are recorded one by one. Price is always recorded to the cell note with a comment.
+    Multiple expenses can be written in the same cell, their amounts will be summarized and
+    the note will reflect the list with  each expense's amount and comment.
+    """
     worksheets = {}  # dict to store opened worksheets for different months (worksheet's name is a key)
 
     for _, record in records.iterrows():
@@ -50,6 +55,7 @@ def record_expenses_to_spreadsheet(spreadsheet, records, response_worksheet, ski
     logger.info(f'Закончено заполнение таблицы "{spreadsheet.title}".\n')
 
 def update_google_spreadsheets(data, gc):
+    """For each spreadsheet in dataset call recording to Google spreadsheet"""
     logger.debug(f'Started recording data at {datetime.now().time()}\n')
 
     expenses_worksheet = get_form_responses_worksheet(gc)
@@ -72,6 +78,10 @@ def update_google_spreadsheets(data, gc):
 
 
 def run():
+    """Create Google client
+    Get all configurations, retrieve and process expenses data
+    Run updating Google spreadsheets function
+    """
     gc = GoogleClient().gc
 
     if not gc:

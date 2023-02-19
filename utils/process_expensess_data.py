@@ -19,6 +19,12 @@ def get_expenses_data(gc):
 
 
 def get_processed_expenses_data(spreadsheets_config, expenses_config, gc):
+    """Calculate category, note and amount value by joining values of three columns (only one of them is supposed to have value)
+    Add rec_line value that is expense line number in 'Расходы / Отчеты' spreadsheet to mark it as recorded.
+    Remove exprenses that are already recorded.
+    Split all data in three datasets based on spreadsheet they belong to
+    Return dict where key is Google spreadsheet id and value id dataset with booking records.
+    """
     expense_df = get_expenses_data(gc)
 
     expense_df['category'] = expense_df[['cat1', 'cat2', 'cat3']].astype(str).apply(''.join, axis=1)
