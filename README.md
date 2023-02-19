@@ -1,6 +1,6 @@
 # record-bookings
 
-A script to transfer records from Bnova spreadsheet to Google Sheets.
+A PyQT desktop application to record profits and expenses to Google spreadsheet.
 
 ## Installation
 
@@ -15,18 +15,10 @@ pip install requirements.txt
 
 1. To authorize Google Sheets:
 
-   Create a developer account and create OAuth Client ID credentials for a Desktop application. These credentials give the python script access to a Google account ([instruction](https://pygsheets.readthedocs.io/en/stable/authorization.html#oauth-credentials)).
-2. Download `.json` file with a client key and copy it to `secret/desktop_client_secret.json` file in the project.
-3. Download spreadsheet from Bnova for desired period.
-
-    _Note: Make sure to exclude records in 'cancelled' status._
-
-4. Unpack downloaded archive with a spreadsheet and copy full path to a `.xslx` file
-
-   Example: `/Users/user/Downloads/19057_bookings_20230106193908_1.xlsx`
-
-5. To run the script for specified file in command line:
+   Create a developer account and create credentials for service account. These credentials give the python script access to a Google account ([instruction](https://pygsheets.readthedocs.io/en/stable/authorization.html#oauth-credentials)).
+2. Download `.json` file with a service account and copy it to `secret/desktop_client_secret.json` file in the project.
+3. Bnova credentials need to be set in clients/bnova_client.py
 
 ```sh
-python main.py /Users/user/Downloads/19057_bookings_20230106193908_1.xlsx
+python main.py
 ```
