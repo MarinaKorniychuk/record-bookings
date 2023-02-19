@@ -49,7 +49,8 @@ def open_or_create_worksheet(worksheet_name, spreadsheet, worksheets):
     """Open specified worksheet in spreadsheet by its title
     and save it in worksheets dict for a later use
 
-    If worksheet doesn't exist in spreadsheet, create new one using an empty template from TEMPLATE_WORKSHEETS"""
+    If worksheet doesn't exist in spreadsheet, create new one using an empty template from TEMPLATE_WORKSHEETS
+    """
     # do nothing and return if specified worksheet is already opened and saved in worksheets dict
     if worksheets.get(worksheet_name):
         return

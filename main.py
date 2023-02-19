@@ -3,28 +3,14 @@ import logging
 import sys
 
 from PyQt6 import QtCore
-from PyQt6.QtWidgets import (
-    QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QPlainTextEdit, QMessageBox, QDateEdit
-)
-from workers.bookings.worker import BookingWorker
-from workers.exprenses.worker import ExpenseWorker
+from PyQt6.QtWidgets import (QApplication, QVBoxLayout, QPushButton, QLabel, QWidget, QFormLayout, QDateEdit
+                             )
+from bookings.record_bookings import run as record_bookings
+from exprenses.record_expenses import run as record_expenses
 
 logger = logging.getLogger('record.bookings')
-logging.basicConfig()
-logger.setLevel(logging.DEBUG)
-
-
-class QTextEditLogger(logging.Handler):
-    """Customized handler to output logs in text widget in real-time."""
-    def __init__(self, parent):
-        super().__init__()
-        self.widget = QPlainTextEdit(parent)
-        self.widget.setReadOnly(True)
-
-    def emit(self, record):
-        msg = self.format(record)
-        self.widget.appendPlainText(msg)
-        self.widget.centerCursor()  # scroll to the bottom
+logging.basicConfig(format='%(message)s')
+logger.setLevel(logging.INFO)
 
 
 class BookingsWindow(QWidget):
@@ -38,23 +24,17 @@ class BookingsWindow(QWidget):
         self.arrival_to_date = QDateEdit(calendarPopup=True)
         self.arrival_to_date.setDateTime(QtCore.QDateTime.currentDateTime())
 
-        self.booking_worker = BookingWorker(self)
-        self.expense_worker = ExpenseWorker(self)
-
         self.btnStartBookingWorker = QPushButton('Заполнить приходы')
-        self.btnStartBookingWorker.clicked.connect(self.start_booking_worker)
+        self.btnStartBookingWorker.clicked.connect(self.start_recording_bookings)
 
         self.btnStartExpenseWorker = QPushButton('Заполнить расходы')
-        self.btnStartExpenseWorker.clicked.connect(self.start_expense_worker)
-
-        self.logTextBox = QTextEditLogger(self)
-        self.configure_app_logger()
+        self.btnStartExpenseWorker.clicked.connect(self.start_recording_expenses)
 
         self.formLayout = QFormLayout()
         self.set_app_layout()
         layout.addLayout(self.formLayout)
 
-        self.setGeometry(300, 300, 550, 450)
+        self.setGeometry(300, 300, 550, 270)
         self.setLayout(layout)
         self.setWindowTitle("Bookings")
 
@@ -63,54 +43,18 @@ class BookingsWindow(QWidget):
         self.formLayout.addRow(QLabel('Дата заезда: '), self.arrival_from_date)
         self.formLayout.addRow(QLabel('по '), self.arrival_to_date)
         self.formLayout.addRow(self.btnStartBookingWorker)
-
+        self.formLayout.addRow(QLabel(''))
+        self.formLayout.addRow(QLabel('Нажмите, чтобы внести в таблицу все новые расходы: '))
         self.formLayout.addRow(self.btnStartExpenseWorker)
 
-        self.formLayout.addRow(self.logTextBox.widget)
+    def start_recording_bookings(self):
+        arrival_from = datetime.date(*self.arrival_from_date.date().getDate()).strftime('%d.%m.%Y')
+        arrival_to = datetime.date(*self.arrival_to_date.date().getDate()).strftime('%d.%m.%Y')
 
-    def configure_app_logger(self):
-        self.logTextBox.setFormatter(logging.Formatter('%(message)s'))
-        logger.addHandler(self.logTextBox)
-        logger.setLevel(logging.INFO)
+        record_bookings(arrival_from, arrival_to)
 
-    def start_booking_worker(self):
-        arrival_from = datetime.date(*self.arrival_from_date.date().getDate())
-        arrival_to = datetime.date(*self.arrival_to_date.date().getDate())
-
-        if not self.is_any_worker_running_now():
-            self.booking_worker.set_dates(arrival_from, arrival_to)
-            self.booking_worker.start()
-            self.disable_buttons()
-
-    def start_expense_worker(self):
-        if not self.is_any_worker_running_now():
-            self.expense_worker.start()
-            self.disable_buttons()
-
-    def disable_buttons(self):
-        self.btnStartBookingWorker.setEnabled(False)
-        self.btnStartExpenseWorker.setEnabled(False)
-
-    def is_any_worker_running_now(self):
-        return self.booking_worker.isRunning() or self.expense_worker.isRunning()
-
-    def closeEvent(self, event):
-        result = QMessageBox.question(
-            self,
-            "Confirm Exit...",
-            "Are you sure you want to exit ?",
-            QMessageBox.StandardButton.No | QMessageBox.StandardButton.Yes
-        )
-
-        if result == QMessageBox.StandardButton.Yes:
-            if self.booking_worker.isRunning():
-                self.booking_worker.terminate()
-                self.booking_worker.wait()
-            if self.expense_worker.isRunning():
-                self.expense_worker.terminate()
-                self.expense_worker.wait()
-        else:
-            event.ignore()
+    def start_recording_expenses(self):
+        record_expenses()
 
 
 def main():

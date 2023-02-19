@@ -5,6 +5,7 @@ from utils.configuration import get_form_responses_worksheet
 logger = logging.getLogger('record.bookings')
 
 def get_expenses_data(gc):
+    """Get expenses data from Google worksheet"""
     worksheet= get_form_responses_worksheet(gc)
 
     column_names = ['datetime',	'spreadsheet', 'name', 'cat1', 'com1', 'am1', 'ch1', 'cat2', 'com2', 'am2', 'ch2', 'cat3', 'com3', 'am3', 'ch3', 'recorded']
@@ -32,7 +33,7 @@ def get_processed_expenses_data(spreadsheets_config, expenses_config, gc):
     expense_df['recorded'] = expense_df['recorded'].fillna(0)
     expense_df = expense_df[expense_df.recorded.isin([0.0])]
 
-    logger.info(f'Total amount of expenses for recording: {len(expense_df)}\n')
+    logger.info(f'Количество новых записей о расходах в таблице: {len(expense_df)}\n')
 
     data = dict()
     for _, record in spreadsheets_config.iterrows():
@@ -44,6 +45,6 @@ def get_processed_expenses_data(spreadsheets_config, expenses_config, gc):
         expenses_sub_df = expenses_sub_df.join(categories_set.set_index('category'), on='category')
         data[record['spreadsheet_title']] = expenses_sub_df.dropna(subset=['category', 'spreadsheet', 'line'])
 
-    return data
+    return len(expense_df), data
 
 

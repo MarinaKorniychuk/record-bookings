@@ -1,14 +1,17 @@
 import logging
 import time
+
 from datetime import datetime
 
 import httplib2
 
-from pygsheets import RequestError, SpreadsheetNotFound, IncorrectCellLabel
+from pygsheets import RequestError, SpreadsheetNotFound, IncorrectCellLabel, WorksheetNotFound
 
-from utils.configuration import get_form_responses_worksheet
+from clients.google_client import GoogleClient
+from utils.configuration import get_form_responses_worksheet, get_spreadsheets_config, get_expenses_config
 from utils.date_helper import get_expense_date
 from utils.log_error import log_error
+from utils.process_expensess_data import get_processed_expenses_data
 from utils.spreadsheet_operations import get_worksheet_name_by_month, open_or_create_worksheet, \
     get_expense_cell_address_by_date, update_expense_cell_value, update_cell_with_value
 
@@ -33,7 +36,7 @@ def record_expenses_to_spreadsheet(spreadsheet, records, response_worksheet, ski
             update_cell_with_value(f'P{record["rec_line"]}', 1, response_worksheet)
 
             logger.info(
-                f'{record["amount"]} expense for {record["category"]} category from {expense_date} is recorded\n'
+                f'Трата от {expense_date} в размере {record["amount"]}р в категории {record["category"]} внесена в таблицу.\n'
             )
 
             time.sleep(2)
@@ -44,10 +47,9 @@ def record_expenses_to_spreadsheet(spreadsheet, records, response_worksheet, ski
             skipped.append(record)
             continue
 
-    logger.info(f'{spreadsheet.title} IS DONE\n')
+    logger.info(f'Закончено заполнение таблицы "{spreadsheet.title}".\n')
 
 def update_google_spreadsheets(data, gc):
-    """Transfer records from dataset to Google spreadsheets"""
     logger.debug(f'Started recording data at {datetime.now().time()}\n')
 
     expenses_worksheet = get_form_responses_worksheet(gc)
@@ -66,5 +68,25 @@ def update_google_spreadsheets(data, gc):
 
     logger.debug(f'Finished recording data at {datetime.now().time()}\n')
 
-    logger.info(f'SKIPPED RECORDS: \n{skipped}')
+    logger.info(f'Пропущенные записи: \n{skipped}')
 
+
+def run():
+    gc = GoogleClient().gc
+
+    if not gc:
+        return
+
+    try:
+        spreadsheets_config = get_spreadsheets_config(gc)
+        expenses_config = get_expenses_config(gc)
+
+        total, expenses_data = get_processed_expenses_data(spreadsheets_config, expenses_config, gc)
+    except (SpreadsheetNotFound, WorksheetNotFound) as error:
+        log_error(error)
+        return
+
+    if not total:
+        return
+
+    update_google_spreadsheets(expenses_data, gc)

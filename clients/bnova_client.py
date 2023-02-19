@@ -1,12 +1,11 @@
 import logging
-
 import requests
 
 BNOVA_AUTH_URL = 'https://online.bnovo.ru/'
 BNOVA_DASHBOARD_URL = 'https://online.bnovo.ru/dashboard'
 
-BNOVA_USERNAME = '63baa1730b510+19057@customapp.bnovo.ru'
-BNOVA_PASSWORD = '54739b599f7a63b4'
+BNOVA_USERNAME = ''
+BNOVA_PASSWORD = ''
 
 BNOVA_CREDENTIALS = {
     'username': BNOVA_USERNAME,
@@ -46,10 +45,9 @@ class BnovaClient:
         }
 
     def get_bookings_data(self, arrival_from, arrival_to):
-
         self.authorize()
 
-        logger.info(f'Start getting data from Bnova for bookings from {arrival_from} to {arrival_to}')
+        logger.info(f'\nПолучение от Bnova данных о заездах с {arrival_from} по {arrival_to}')
 
         params = self.build_dashboard_url_params(arrival_from, arrival_to)
         response = self.session.get(BNOVA_DASHBOARD_URL, params=params, headers={'accept': 'application/json'}).json()
@@ -62,6 +60,6 @@ class BnovaClient:
                 response = self.session.get(BNOVA_DASHBOARD_URL, params=params, headers={'accept': 'application/json'}).json()
                 bookings += response['bookings']
 
-        logger.info(f'Total amount of bookings for specified period: {len(bookings)}\n')
+        logger.info(f'Полное количество бронирований за указанный период: {len(bookings)}\n')
 
         return bookings

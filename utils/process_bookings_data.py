@@ -36,8 +36,8 @@ def process_bookings_data(raw_data, spreadsheets_config, bookings_config):
     """Adds final_amount, days and daily_amount columns to records dataset
     Merge with config dataframe to add target spreadsheet and cell addresses to the records
     Split all data in three datasets based on spreadsheet they belong to
-    Return dict where key is Google spreadsheet id and value id dataset with booking records."""
-
+    Return dict where key is Google spreadsheet id and value id dataset with booking records.
+    """
     bookings_df = get_dataframe_from_raw_data(raw_data)
 
     bookings_df['final_amount'] = bookings_df.apply(lambda row: calculate_profit_amount(row), axis=1)
@@ -52,7 +52,7 @@ def process_bookings_data(raw_data, spreadsheets_config, bookings_config):
     invalid = pd.concat([bookings_df, valid_bookings_df]).drop_duplicates(keep=False)
     if len(invalid):
         invalid = invalid[['category', 'arrival_date']]
-        log_error(f'Could not record the following bookings:\n\n{invalid}\n')
+        log_error(f'Не смогу внести в таблицы следующие бронирования (проверьте конфиг):\n\n{invalid}\n')
 
     data = dict()
 
@@ -61,5 +61,3 @@ def process_bookings_data(raw_data, spreadsheets_config, bookings_config):
         data[record['spreadsheet_title']] = valid_bookings_df.query("spreadsheet == @spreadsheet_id")
 
     return data
-
-

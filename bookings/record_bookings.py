@@ -8,10 +8,14 @@ from dateutil import rrule
 
 import httplib2
 
-from pygsheets import SpreadsheetNotFound, RequestError, IncorrectCellLabel
+from pygsheets import SpreadsheetNotFound, RequestError, IncorrectCellLabel, WorksheetNotFound
 
+from clients.bnova_client import BnovaClient
+from clients.google_client import GoogleClient
+from utils.configuration import get_spreadsheets_config, get_bookings_config
 from utils.date_helper import get_date
 from utils.log_error import log_error
+from utils.process_bookings_data import process_bookings_data
 from utils.spreadsheet_operations import get_worksheet_name_by_month, open_or_create_worksheet, \
     get_profit_cell_address_by_date, update_range_with_values, update_cell_with_value
 
@@ -82,8 +86,8 @@ def record_profits_to_spreadsheet(spreadsheet, records, skipped):
 
             logger.info(
                 f'{record["source"]}: {record["category"]} [{start_date} - {get_date(record["leaving_date"])}] '
-                f'profit: {record["final_amount"]} ({record["days"]} day(s) for {record["daily_amount"]}) '
-                f'({format(time.time() - start_time, ".2f")}s).\n'
+                f'полный приход: {record["final_amount"]}р ({record["days"]} {"день" if record["days"] == 1 else "дня"} '
+                f'по {record["daily_amount"]}р).\n'
             )
 
             time.sleep(2)
@@ -93,11 +97,10 @@ def record_profits_to_spreadsheet(spreadsheet, records, skipped):
             skipped.append(record)
             continue
 
-    logger.info(f'{spreadsheet.title} IS DONE\n')
+    logger.info(f'Закончено заполнение таблицы "{spreadsheet.title}".\n')
 
 
 def update_google_spreadsheets(data, gc):
-    """Transfer records from dataset to Google spreadsheets"""
     logger.debug(f'Started recording data at {datetime.datetime.now().time()}\n')
 
     skipped = []
@@ -113,4 +116,24 @@ def update_google_spreadsheets(data, gc):
 
     logger.debug(f'Finished recording data at {datetime.datetime.now().time()}\n')
 
-    logger.info(f'SKIPPED RECORDS: \n{skipped}')
+    logger.info(f'Пропущенные записи: \n{skipped}')
+
+
+def run(arrival_from, arrival_to):
+    gc = GoogleClient().gc
+    bc = BnovaClient()
+
+    if not gc:
+        return
+
+    try:
+        spreadsheets_config = get_spreadsheets_config(gc)
+        bookings_config = get_bookings_config(gc)
+    except (SpreadsheetNotFound, WorksheetNotFound) as error:
+        log_error(error)
+        return
+
+    raw_data = bc.get_bookings_data(arrival_from, arrival_to)
+    bookings_data = process_bookings_data(raw_data, spreadsheets_config, bookings_config)
+
+    update_google_spreadsheets(bookings_data, gc)
