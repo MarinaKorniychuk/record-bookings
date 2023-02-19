@@ -1,6 +1,8 @@
 import logging
 import requests
 
+from utils.log_error import log_error
+
 BNOVA_AUTH_URL = 'https://online.bnovo.ru/'
 BNOVA_DASHBOARD_URL = 'https://online.bnovo.ru/dashboard'
 
@@ -23,14 +25,18 @@ class BnovaClient:
     session = None
     auth_response = None
 
-    def authorize(self):
+    def __init__(self):
+        if not BNOVA_USERNAME or not BNOVA_PASSWORD:
+            log_error('Нет данных для авторизации в системе Bnova.')
+            return
+
         self.session = requests.Session()
         self.auth_response = self.session.post(
             BNOVA_AUTH_URL,
             data=BNOVA_CREDENTIALS,
             headers={'accept': 'application/json'}
         )
-        logger.info('Bnova client successfully authorized.')
+        logger.info('Bnova client: authorized.')
 
 
     def build_dashboard_url_params(self, arrival_from, arrival_to, page=1):
@@ -50,8 +56,6 @@ class BnovaClient:
         Check response 'pages' value after first call and make following calls to retrieve remaining bookings
         if necessary.
         """
-        self.authorize()
-
         logger.info(f'\nПолучение от Bnova данных о заездах с {arrival_from} по {arrival_to}')
 
         params = self.build_dashboard_url_params(arrival_from, arrival_to)

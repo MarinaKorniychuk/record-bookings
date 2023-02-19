@@ -51,10 +51,18 @@ class BookingsWindow(QWidget):
         arrival_from = datetime.date(*self.arrival_from_date.date().getDate()).strftime('%d.%m.%Y')
         arrival_to = datetime.date(*self.arrival_to_date.date().getDate()).strftime('%d.%m.%Y')
 
-        record_bookings(arrival_from, arrival_to)
+        try:
+            record_bookings(arrival_from, arrival_to)
+        except Exception as error:
+            logger.error('Выполнение прервано из-за ошибки:', error)
+            logger.error('Попробуйте запустить выполнение снова.')
 
     def start_recording_expenses(self):
-        record_expenses()
+        try:
+            record_expenses()
+        except Exception as error:
+            logger.error('Выполнение прервано из-за ошибки:', error)
+            logger.error('Попробуйте запустить выполнение снова.')
 
 
 def main():
