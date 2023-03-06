@@ -124,7 +124,7 @@ def update_google_spreadsheets(data, gc):
     logger.info(f'Пропущенные записи: \n{skipped}')
 
 
-def run(arrival_from, arrival_to):
+def run(arrival_from, arrival_to, spreadsheets_config):
     """Create Google and Bnova client
     Get all configurations, retrieve and process bookings from Bnova
     Run updating Google spreadsheets function
@@ -136,7 +136,6 @@ def run(arrival_from, arrival_to):
         return
 
     try:
-        spreadsheets_config = get_spreadsheets_config(gc)
         bookings_config = get_bookings_config(gc)
     except (SpreadsheetNotFound, WorksheetNotFound) as error:
         log_error(error)
